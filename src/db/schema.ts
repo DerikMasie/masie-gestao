@@ -1,0 +1,276 @@
+/**
+ * Esquema do banco MASIE GESTÃO — Fase 2 (núcleo, segurança, cadastros, obras).
+ * Convenções: snake_case no banco, valores monetários numeric(14,2), percentuais numeric(7,4)
+ * (0.2000 = 20%), exclusão lógica por `excluido_em`, `empresa_id` em todas as tabelas de negócio.
+ */
+import { sql } from "drizzle-orm";
+import {
+  bigserial, boolean, date, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey,
+  text, timestamp, uniqueIndex, uuid,
+} from "drizzle-orm/pg-core";
+import type { MatrizPermissoes } from "@/dominio/permissoes";
+import type { ParametrosOrcamento } from "@/dominio/orcamento";
+
+const id = () => uuid().primaryKey().defaultRandom();
+const criadoEm = () => timestamp({ withTimezone: true }).notNull().defaultNow();
+const atualizadoEm = () => timestamp({ withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date());
+const dinheiro = () => numeric({ precision: 14, scale: 2 });
+const percentual = () => numeric({ precision: 7, scale: 4 });
+
+// ───────────────────────────── Empresa e segurança ─────────────────────────────
+
+export const empresa = pgTable("empresa", {
+  id: id(),
+  razaoSocial: text().notNull(),
+  nomeFantasia: text().notNull(),
+  cnpj: text(),
+  endereco: text(),
+  telefone: text(),
+  email: text(),
+  banco: text(),
+  agencia: text(),
+  conta: text(),
+  pix: text(),
+  corPrimaria: text().notNull().default("#1e3a5f"),
+  parametrosOrcamento: jsonb().$type<ParametrosOrcamento>().notNull(),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+});
+
+export const perfil = pgTable("perfil", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  nome: text().notNull(),
+  descricao: text(),
+  /** Se verdadeiro, o perfil enxerga todas as obras; senão só as obras às quais o usuário foi vinculado. */
+  acessoTodasObras: boolean().notNull().default(false),
+  /** Perfis de sistema não podem ser excluídos (podem ter permissões ajustadas, exceto Administrador). */
+  sistema: boolean().notNull().default(false),
+  permissoes: jsonb().$type<MatrizPermissoes>().notNull(),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("perfil_empresa_nome_uq").on(t.empresaId, t.nome)]);
+
+export const usuario = pgTable("usuario", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  nome: text().notNull(),
+  email: text().notNull(),
+  senhaHash: text().notNull(),
+  perfilId: uuid().notNull().references(() => perfil.id),
+  cargo: text(),
+  telefone: text(),
+  ativo: boolean().notNull().default(true),
+  deveTrocarSenha: boolean().notNull().default(true),
+  ultimoLoginEm: timestamp({ withTimezone: true }),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("usuario_email_uq").on(sql`lower(${t.email})`)]);
+
+export const sessao = pgTable("sessao", {
+  /** SHA-256 do token do cookie — o token em si nunca é armazenado. */
+  id: text().primaryKey(),
+  usuarioId: uuid().notNull().references(() => usuario.id, { onDelete: "cascade" }),
+  expiraEm: timestamp({ withTimezone: true }).notNull(),
+  ip: text(),
+  userAgent: text(),
+  criadoEm: criadoEm(),
+}, (t) => [index("sessao_usuario_idx").on(t.usuarioId)]);
+
+export const tentativaLogin = pgTable("tentativa_login", {
+  id: bigserial({ mode: "number" }).primaryKey(),
+  email: text().notNull(),
+  ip: text(),
+  sucesso: boolean().notNull(),
+  criadoEm: criadoEm(),
+}, (t) => [index("tentativa_login_email_idx").on(t.email, t.criadoEm), index("tentativa_login_ip_idx").on(t.ip, t.criadoEm)]);
+
+export const acaoAuditoria = pgEnum("acao_auditoria", [
+  "CRIAR", "EDITAR", "EXCLUIR", "RESTAURAR", "LOGIN", "LOGIN_FALHOU", "LOGOUT", "TROCAR_SENHA",
+  "VER_DADOS_SENSIVEIS", "ANEXAR", "REMOVER_ANEXO", "GERAR_ESTRUTURA",
+]);
+
+export const auditoria = pgTable("auditoria", {
+  id: bigserial({ mode: "number" }).primaryKey(),
+  empresaId: uuid().references(() => empresa.id),
+  usuarioId: uuid().references(() => usuario.id),
+  acao: acaoAuditoria().notNull(),
+  entidade: text().notNull(),
+  entidadeId: text(),
+  obraId: uuid(),
+  descricao: text(),
+  antes: jsonb(),
+  depois: jsonb(),
+  ip: text(),
+  criadoEm: criadoEm(),
+}, (t) => [
+  index("auditoria_entidade_idx").on(t.entidade, t.entidadeId),
+  index("auditoria_obra_idx").on(t.obraId, t.criadoEm),
+  index("auditoria_data_idx").on(t.empresaId, t.criadoEm),
+]);
+
+// ───────────────────────────── Cadastros ─────────────────────────────
+
+export const tipoPessoa = pgEnum("tipo_pessoa", ["PF", "PJ"]);
+
+export const cliente = pgTable("cliente", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  tipoPessoa: tipoPessoa().notNull().default("PF"),
+  nome: text().notNull(),
+  documento: text(),
+  email: text(),
+  telefone: text(),
+  endereco: text(),
+  observacoes: text(),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+  excluidoEm: timestamp({ withTimezone: true }),
+}, (t) => [uniqueIndex("cliente_documento_uq").on(t.empresaId, t.documento).where(sql`${t.documento} is not null and ${t.excluidoEm} is null`)]);
+
+export const fornecedor = pgTable("fornecedor", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  /** "Nome conhecido" — como a equipe chama o prestador (ex.: "Everton"). */
+  nome: text().notNull(),
+  razaoSocial: text(),
+  tipoPessoa: tipoPessoa().notNull().default("PF"),
+  documento: text(),
+  especialidade: text(),
+  telefone: text(),
+  email: text(),
+  /** JSON cifrado (AES-256-GCM) com nome para depósito, banco, agência, conta e PIX. */
+  dadosBancariosCifrado: text(),
+  observacoes: text(),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+  excluidoEm: timestamp({ withTimezone: true }),
+}, (t) => [
+  uniqueIndex("fornecedor_documento_uq").on(t.empresaId, t.documento).where(sql`${t.documento} is not null and ${t.excluidoEm} is null`),
+  uniqueIndex("fornecedor_nome_uq").on(t.empresaId, sql`lower(${t.nome})`).where(sql`${t.excluidoEm} is null`),
+]);
+
+export const tipoEtapa = pgEnum("tipo_etapa", ["CONTRATO", "ADITIVO", "FATURAMENTO_DIRETO"]);
+
+/** Etapas padrão da EAP (as 19 etapas da planilha AO), copiadas para cada nova obra. */
+export const etapaPadrao = pgTable("etapa_padrao", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  ordem: integer().notNull(),
+  nome: text().notNull(),
+  tipo: tipoEtapa().notNull().default("CONTRATO"),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+});
+
+// ───────────────────────────── Obras ─────────────────────────────
+
+export const situacaoObra = pgEnum("situacao_obra", [
+  "PROSPECCAO", "EM_ORCAMENTO", "CONTRATADA", "EM_ANDAMENTO", "PARALISADA", "CONCLUIDA", "CANCELADA",
+]);
+
+export const obra = pgTable("obra", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  codigo: text().notNull(),
+  nome: text().notNull(),
+  clienteId: uuid().notNull().references(() => cliente.id),
+  endereco: text(),
+  cidade: text(),
+  uf: text(),
+  tipoObra: text(),
+  responsavelTecnicoId: uuid().references(() => usuario.id),
+  gestorId: uuid().references(() => usuario.id),
+  dataInicio: date({ mode: "string" }).notNull(),
+  dataFimContratual: date({ mode: "string" }).notNull(),
+  dataConclusao: date({ mode: "string" }),
+  valorContratoOriginal: dinheiro().notNull().default("0"),
+  percentualEntrada: percentual().notNull().default("0"),
+  /** Provisório na Fase 2: na Fase 3 passa a ser derivado do orçamento-base aprovado. */
+  orcamentoCustoAprovado: dinheiro().notNull().default("0"),
+  margemPrevista: percentual(),
+  situacao: situacaoObra().notNull().default("EM_ORCAMENTO"),
+  observacoes: text(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+  excluidoEm: timestamp({ withTimezone: true }),
+}, (t) => [uniqueIndex("obra_codigo_uq").on(t.empresaId, t.codigo)]);
+
+export const tipoCentroCusto = pgEnum("tipo_centro_custo", ["OBRA", "ADMINISTRATIVO"]);
+
+export const centroCusto = pgTable("centro_custo", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  codigo: text().notNull(),
+  nome: text().notNull(),
+  tipo: tipoCentroCusto().notNull(),
+  obraId: uuid().references(() => obra.id),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("centro_custo_codigo_uq").on(t.empresaId, t.codigo), uniqueIndex("centro_custo_obra_uq").on(t.obraId)]);
+
+/** EAP da obra: cópia das etapas padrão no momento da criação (pode divergir depois). */
+export const obraEtapa = pgTable("obra_etapa", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  etapaPadraoId: uuid().references(() => etapaPadrao.id),
+  ordem: integer().notNull(),
+  nome: text().notNull(),
+  tipo: tipoEtapa().notNull(),
+  criadoEm: criadoEm(),
+}, (t) => [uniqueIndex("obra_etapa_ordem_uq").on(t.obraId, t.ordem)]);
+
+/** Calendário semanal da obra (segunda a domingo). Substitui as colunas fixas de semanas da planilha. */
+export const obraSemana = pgTable("obra_semana", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  numero: integer().notNull(),
+  inicio: date({ mode: "string" }).notNull(),
+  fim: date({ mode: "string" }).notNull(),
+}, (t) => [uniqueIndex("obra_semana_numero_uq").on(t.obraId, t.numero)]);
+
+export const usuarioObra = pgTable("usuario_obra", {
+  usuarioId: uuid().notNull().references(() => usuario.id),
+  obraId: uuid().notNull().references(() => obra.id),
+  papel: text().notNull().default("Equipe"),
+  criadoEm: criadoEm(),
+}, (t) => [primaryKey({ columns: [t.usuarioId, t.obraId] })]);
+
+export const statusOrcamento = pgEnum("status_orcamento", ["RASCUNHO", "ENVIADO", "APROVADO", "REJEITADO", "BASE"]);
+
+/** Cabeçalho de orçamento. Na Fase 2 a obra nasce com a revisão 0 em rascunho; itens chegam na Fase 3. */
+export const orcamento = pgTable("orcamento", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  obraId: uuid().notNull().references(() => obra.id),
+  numero: integer().notNull(),
+  revisao: integer().notNull().default(0),
+  titulo: text().notNull(),
+  status: statusOrcamento().notNull().default("RASCUNHO"),
+  parametros: jsonb().$type<ParametrosOrcamento>().notNull(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("orcamento_numero_rev_uq").on(t.obraId, t.numero, t.revisao)]);
+
+export const anexo = pgTable("anexo", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  entidade: text().notNull(),
+  entidadeId: uuid().notNull(),
+  obraId: uuid().references(() => obra.id),
+  nomeArquivo: text().notNull(),
+  tipoMime: text().notNull(),
+  tamanho: integer().notNull(),
+  sha256: text().notNull(),
+  caminho: text().notNull(),
+  descricao: text(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  excluidoEm: timestamp({ withTimezone: true }),
+}, (t) => [index("anexo_entidade_idx").on(t.entidade, t.entidadeId)]);
