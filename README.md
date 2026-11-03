@@ -4,6 +4,8 @@ Sistema web de gestão de obras, orçamento, planejamento e financeiro da **Masi
 
 - Diagnóstico das planilhas e arquitetura: [`docs/01-diagnostico-e-arquitetura.md`](docs/01-diagnostico-e-arquitetura.md)
 - Entrega da Fase 2 (o que está pronto, limitações, testes): [`docs/02-fase2-entrega.md`](docs/02-fase2-entrega.md)
+- Diagnóstico das planilhas Financeiro, NF, Orçamento Padrão e Planejamento: [`docs/03-diagnostico-complementar.md`](docs/03-diagnostico-complementar.md)
+- Identidade visual e Quadro de atividades: [`docs/04-entrega-identidade-e-quadro.md`](docs/04-entrega-identidade-e-quadro.md)
 
 ## Stack
 
@@ -16,8 +18,8 @@ Pré-requisitos: Node.js 22+ e PostgreSQL 16.
 ```bash
 npm install
 cp .env.example .env        # preencha DATABASE_URL, DADOS_SENSIVEIS_CHAVE e SEED_ADMIN_SENHA
-npm run db:migrate          # cria as tabelas
-npm run db:seed             # empresa, 5 perfis, 19 etapas padrão e o administrador inicial
+npm run db:migrate          # cria/atualiza as tabelas
+npm run db:seed             # carga inicial e atualizações de dados (idempotente: rode após cada migração)
 npm run dev                 # http://localhost:3000
 ```
 
@@ -32,6 +34,7 @@ Entre com `SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA`. A troca de senha é obrigató
 npm test                    # unitários (cálculos) + integração (usa TEST_DATABASE_URL, que é apagado a cada execução)
 npm run typecheck
 node tests/e2e/fluxo-fase2.cjs   # ponta a ponta no navegador (ver cabeçalho do arquivo)
+node tests/e2e/quadro.cjs        # Quadro de atividades (rodar depois do anterior)
 ```
 
 ## Produção

@@ -21,7 +21,7 @@ export function FormCliente({ acao, c }: { acao: (e: EstadoForm, fd: FormData) =
       </Cartao>
       <div className="flex gap-2">
         <BotaoEnviar>Salvar</BotaoEnviar>
-        <Link href="/clientes" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-slate-100">Cancelar</Link>
+        <Link href="/clientes" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-zinc-100">Cancelar</Link>
       </div>
     </Formulario>
   );

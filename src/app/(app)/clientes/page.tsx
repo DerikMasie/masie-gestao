@@ -26,7 +26,7 @@ export default async function PaginaClientes({ searchParams }: { searchParams: P
             <tbody>
               {clientes.map((c) => (
                 <tr key={c.id}>
-                  <td><Link href={`/clientes/${c.id}`} className="font-medium text-marca hover:underline">{c.nome}</Link></td>
+                  <td><Link href={`/clientes/${c.id}`} className="font-medium text-texto underline-offset-4 hover:underline decoration-destaque decoration-2">{c.nome}</Link></td>
                   <td className="tabular whitespace-nowrap">{c.documento ? formatarDocumento(c.documento) : "—"}</td>
                   <td className="text-suave">{c.email ?? "—"}</td><td className="whitespace-nowrap text-suave">{c.telefone ?? "—"}</td>
                 </tr>

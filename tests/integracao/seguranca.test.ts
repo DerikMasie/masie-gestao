@@ -39,6 +39,13 @@ describe("login e sessão", () => {
     expect((await autenticar(db, "admin@teste.com", "NovaSenha9", {})).ok).toBe(true);
   });
 
+  it("lista perfis com a contagem correta de usuários", async () => {
+    const { listarPerfis } = await import("@/servicos/usuarios");
+    const perfis = await listarPerfis(db, base.empresaId);
+    expect(perfis.find((p) => p.nome === "Administrador")!.usuarios).toBe(1);
+    expect(perfis.find((p) => p.nome === "Engenharia")!.usuarios).toBe(0);
+  });
+
   it("não permite remover o último administrador", async () => {
     const perfis = await db.query.perfil.findMany();
     const eng = perfis.find((p) => p.nome === "Engenharia")!;

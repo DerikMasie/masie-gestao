@@ -36,7 +36,7 @@ export default async function PaginaFornecedores({ searchParams }: { searchParam
             <tbody>
               {lista.map((f) => (
                 <tr key={f.id}>
-                  <td><Link href={`/fornecedores/${f.id}`} className="font-medium text-marca hover:underline">{f.nome}</Link>{f.razaoSocial && <div className="text-xs text-suave">{f.razaoSocial}</div>}</td>
+                  <td><Link href={`/fornecedores/${f.id}`} className="font-medium text-texto underline-offset-4 hover:underline decoration-destaque decoration-2">{f.nome}</Link>{f.razaoSocial && <div className="text-xs text-suave">{f.razaoSocial}</div>}</td>
                   <td>{f.especialidade ?? "—"}</td>
                   <td className="tabular whitespace-nowrap">{f.documento ? formatarDocumento(f.documento) : "—"}</td>
                   <td className="text-suave">{f.telefone ?? f.email ?? "—"}{f.temDadosBancarios && <Lock className="ml-1 inline size-3" aria-label="Possui dados bancários protegidos" />}</td>

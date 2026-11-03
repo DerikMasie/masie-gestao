@@ -190,7 +190,7 @@ async function AbaDocumentos({ obraId, empresaId, podeEditar }: { obraId: string
             <tbody>
               {anexos.map((a) => (
                 <tr key={a.id}>
-                  <td><a href={`/api/anexos/${a.id}`} className="font-medium text-marca hover:underline" target="_blank" rel="noopener">{a.nomeArquivo}</a>{a.descricao && <div className="text-xs text-suave">{a.descricao}</div>}</td>
+                  <td><a href={`/api/anexos/${a.id}`} className="font-medium text-texto underline-offset-4 hover:underline decoration-destaque decoration-2" target="_blank" rel="noopener">{a.nomeArquivo}</a>{a.descricao && <div className="text-xs text-suave">{a.descricao}</div>}</td>
                   <td className="tabular whitespace-nowrap text-suave">{tamanho(a.tamanho)}</td>
                   <td className="text-suave">{a.autor} · {formatarData(a.criadoEm)}</td>
                   {podeEditar && <td className="text-right"><AcaoConfirmada acao={removerAnexoAcao.bind(null, obraId, a.id)} confirmacao={`Remover "${a.nomeArquivo}"?`} variante="secundario">Remover</AcaoConfirmada></td>}

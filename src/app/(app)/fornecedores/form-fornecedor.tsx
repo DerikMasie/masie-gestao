@@ -57,14 +57,14 @@ export function FormFornecedor({ acao, f, bancarios }: {
             ))}
           </dl>
         ) : bancarios.modo === "oculto" ? (
-          <p className="text-sm text-suave">Dados protegidos. <Link href="?bancarios=1" className="text-marca underline">Mostrar e editar dados bancários</Link> (o acesso será registrado).</p>
+          <p className="text-sm text-suave">Dados protegidos. <Link href="?bancarios=1" className="text-texto underline decoration-destaque decoration-2 underline-offset-2">Mostrar e editar dados bancários</Link> (o acesso será registrado).</p>
         ) : (
           <p className="text-sm text-suave">Seu perfil não tem acesso a dados bancários de fornecedores.</p>
         )}
       </Cartao>
       <div className="flex gap-2">
         <BotaoEnviar>Salvar</BotaoEnviar>
-        <Link href="/fornecedores" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-slate-100">Cancelar</Link>
+        <Link href="/fornecedores" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-zinc-100">Cancelar</Link>
       </div>
     </Formulario>
   );

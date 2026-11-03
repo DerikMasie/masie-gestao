@@ -5,6 +5,9 @@ import { formatarData, formatarMoeda, formatarPercentual } from "@/dominio/forma
 import { exigirPermissaoPagina, temPermissao } from "@/lib/auth/atual";
 import { listarObras } from "@/servicos/obras";
 import { indicadoresPainel } from "@/servicos/painel";
+import { minhasTarefas } from "@/servicos/quadros";
+import { hojeIso } from "@/dominio/calendario";
+import { situacaoCartao } from "@/dominio/quadro";
 import { GraficoSituacoes } from "@/componentes/graficos";
 import { BarraPrazo, SeloPrazo, SeloSituacao } from "@/componentes/rotulos";
 import { Aviso, CabecalhoPagina, Cartao, Indicador, LinkBotao, Tabela, Vazio } from "@/componentes/ui";
@@ -17,10 +20,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const u = await exigirPermissaoPagina("dashboard");
   const p = await searchParams;
   const acesso = { id: u.id, empresaId: u.empresaId, acessoTodasObras: u.perfil.acessoTodasObras };
-  const [i, todas] = await Promise.all([
+  const verQuadro = temPermissao(u, "quadro");
+  const [i, todas, tarefas] = await Promise.all([
     indicadoresPainel(db, acesso, { obraId: p.obra || undefined, inicioDe: p.de || undefined, inicioAte: p.ate || undefined }),
     listarObras(db, acesso, { ordem: "codigo", direcao: "desc" }),
+    verQuadro ? minhasTarefas(db, u.empresaId, u.id) : Promise.resolve([]),
   ]);
+  const hoje = hojeIso();
 
   return (
     <>
@@ -62,7 +68,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               <tbody>
                 {i.obrasAtivas.map((o) => (
                   <tr key={o.id}>
-                    <td><Link href={`/obras/${o.id}`} className="font-medium hover:text-marca">{o.codigo}</Link><div className="max-w-56 truncate text-xs text-suave">{o.nome}</div></td>
+                    <td><Link href={`/obras/${o.id}`} className="font-medium hover:underline decoration-destaque decoration-2 underline-offset-4">{o.codigo}</Link><div className="max-w-56 truncate text-xs text-suave">{o.nome}</div></td>
                     <td><SeloSituacao situacao={o.situacao} /></td>
                     <td><BarraPrazo fracao={o.prazoDecorrido} /></td>
                     <td className="tabular whitespace-nowrap">{formatarData(o.dataFimContratual)}</td>
@@ -74,6 +80,30 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           )}
         </Cartao>
         <div className="min-w-0 space-y-6 lg:col-span-2">
+          {verQuadro && (
+            <Cartao titulo="Minhas tarefas" acoes={<Link href="/quadros/calendario" className="text-xs underline decoration-destaque decoration-2 underline-offset-4">Calendário</Link>}>
+              {tarefas.length === 0 ? <p className="text-sm text-suave">Nenhuma tarefa em aberto atribuída a você.</p> : (
+                <ul className="space-y-2">
+                  {tarefas.map((t) => {
+                    const s = situacaoCartao({ dataEntrega: t.dataEntrega, concluido: false }, hoje);
+                    return (
+                      <li key={t.id} className="flex items-start justify-between gap-3 text-sm">
+                        <Link href={`/quadros/${t.quadroId}?cartao=${t.id}`} className="min-w-0 hover:underline decoration-destaque decoration-2 underline-offset-4">
+                          <span className="block truncate">{t.titulo}</span>
+                          <span className="block text-xs text-suave">{t.quadroNome} · {t.colunaNome}</span>
+                        </Link>
+                        {t.dataEntrega && (
+                          <span className={s === "ATRASADO" ? "shrink-0 rounded bg-red-50 px-1.5 text-xs font-medium text-red-800" : s === "HOJE" ? "shrink-0 rounded bg-destaque px-1.5 text-xs font-medium text-zinc-900" : "tabular shrink-0 text-xs text-suave"}>
+                            {s === "ATRASADO" ? "atrasada · " : s === "HOJE" ? "hoje · " : ""}{formatarData(t.dataEntrega).slice(0, 5)}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </Cartao>
+          )}
           <Cartao titulo="Alertas">
             {i.alertas.length === 0 ? <p className="text-sm text-suave">Nenhum alerta no momento.</p> : (
               <ul className="space-y-2">
@@ -82,7 +112,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                   return (
                     <li key={n} className="flex gap-2 text-sm">
                       <Icone className={a.tipo === "ATRASO" ? "mt-0.5 size-4 shrink-0 text-perigo" : "mt-0.5 size-4 shrink-0 text-alerta"} aria-hidden />
-                      <Link href={`/obras/${a.obraId}`} className="hover:text-marca">{a.texto}</Link>
+                      <Link href={`/obras/${a.obraId}`} className="hover:underline decoration-destaque decoration-2 underline-offset-4">{a.texto}</Link>
                     </li>
                   );
                 })}

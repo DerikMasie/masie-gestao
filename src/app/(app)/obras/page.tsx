@@ -40,7 +40,7 @@ export default async function PaginaObras({ searchParams }: { searchParams: Prom
         </form>
         {obras.length === 0 ? (
           <Vazio titulo={p.q || p.situacao ? "Nenhuma obra encontrada com esses filtros" : "Nenhuma obra cadastrada ainda"}>
-            {temPermissao(u, "obras", "criar") && !p.q && <Link href="/obras/nova" className="text-marca">Cadastrar a primeira obra</Link>}
+            {temPermissao(u, "obras", "criar") && !p.q && <Link href="/obras/nova" className="font-medium underline decoration-destaque decoration-2 underline-offset-4">Cadastrar a primeira obra</Link>}
           </Vazio>
         ) : (
           <Tabela>
@@ -59,8 +59,8 @@ export default async function PaginaObras({ searchParams }: { searchParams: Prom
                 const prazo = calcularPrazo({ ...o, situacao: o.situacao as SituacaoObra }, hoje);
                 return (
                   <tr key={o.id}>
-                    <td className="whitespace-nowrap"><Link href={`/obras/${o.id}`} className="font-medium text-marca hover:underline">{o.codigo}</Link></td>
-                    <td><Link href={`/obras/${o.id}`} className="hover:text-marca">{o.nome}</Link>{o.cidade && <div className="text-xs text-suave">{o.cidade}{o.uf ? `/${o.uf}` : ""}</div>}</td>
+                    <td className="whitespace-nowrap"><Link href={`/obras/${o.id}`} className="font-medium text-texto underline-offset-4 hover:underline decoration-destaque decoration-2">{o.codigo}</Link></td>
+                    <td><Link href={`/obras/${o.id}`} className="hover:underline decoration-destaque decoration-2 underline-offset-4">{o.nome}</Link>{o.cidade && <div className="text-xs text-suave">{o.cidade}{o.uf ? `/${o.uf}` : ""}</div>}</td>
                     <td>{o.clienteNome}</td>
                     <td><SeloSituacao situacao={o.situacao} /></td>
                     <td className="tabular whitespace-nowrap">{formatarData(o.dataInicio)}</td>

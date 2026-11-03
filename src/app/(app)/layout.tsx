@@ -10,6 +10,8 @@ import { sair } from "../login/acoes";
 const MENU: (ItemMenu & { modulo: Modulo })[] = [
   { href: "/", rotulo: "Dashboard", icone: "LayoutDashboard", modulo: "dashboard" },
   { href: "/obras", rotulo: "Obras", icone: "HardHat", modulo: "obras", grupo: "Operação" },
+  { href: "/quadros", rotulo: "Quadros", icone: "KanbanSquare", modulo: "quadro", grupo: "Escritório" },
+  { href: "/quadros/calendario", rotulo: "Calendário", icone: "CalendarDays", modulo: "quadro", grupo: "Escritório" },
   { href: "/clientes", rotulo: "Clientes", icone: "UserRound", modulo: "clientes", grupo: "Cadastros" },
   { href: "/fornecedores", rotulo: "Fornecedores", icone: "Truck", modulo: "fornecedores", grupo: "Cadastros" },
   { href: "/configuracoes/empresa", rotulo: "Empresa", icone: "Building2", modulo: "configuracoes", grupo: "Administração" },
@@ -27,7 +29,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
   const itens = MENU.filter((m) => pode(u.perfil.permissoes, m.modulo)).map(({ modulo: _m, ...i }) => i);
 
   return (
-    <div style={{ ["--marca" as string]: empresa?.corPrimaria ?? "#1e3a5f" }} className="min-h-screen">
+    <div style={{ ["--marca" as string]: empresa?.corPrimaria ?? "#111111" }} className="min-h-screen">
       <MenuLateral itens={itens} usuario={u.nome} perfil={u.perfil.nome} sair={sair} />
       <main className="min-w-0 overflow-x-clip lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>

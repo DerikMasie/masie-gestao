@@ -31,7 +31,7 @@ export default async function EditarFornecedor({ params, searchParams }: { param
       ) : (
         <Cartao titulo="Dados do fornecedor">
           <Dl itens={[["Razão social", f.razaoSocial], ["Telefone", f.telefone], ["E-mail", f.email]]} />
-          {verBanc && !revelar && f.dadosBancariosCifrado && <p className="mt-4 text-sm"><a href="?bancarios=1" className="text-marca underline">Mostrar dados bancários</a> <span className="text-suave">(acesso registrado)</span></p>}
+          {verBanc && !revelar && f.dadosBancariosCifrado && <p className="mt-4 text-sm"><a href="?bancarios=1" className="text-texto underline decoration-destaque decoration-2 underline-offset-2">Mostrar dados bancários</a> <span className="text-suave">(acesso registrado)</span></p>}
         </Cartao>
       )}
       {!temPermissao(u, "fornecedores", "editar") && revelar && (

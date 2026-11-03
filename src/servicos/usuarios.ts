@@ -109,7 +109,7 @@ export async function listarPerfis(db: Executor, empresaId: string) {
   return db.select({
     id: perfil.id, nome: perfil.nome, descricao: perfil.descricao, acessoTodasObras: perfil.acessoTodasObras,
     sistema: perfil.sistema, permissoes: perfil.permissoes,
-    usuarios: sql<number>`(select count(*)::int from ${usuario} where ${usuario.perfilId} = ${perfil.id})`,
+    usuarios: sql<number>`(select count(*)::int from "usuario" u where u.perfil_id = "perfil"."id")`,
   }).from(perfil).where(eq(perfil.empresaId, empresaId)).orderBy(asc(perfil.nome));
 }
 

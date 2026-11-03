@@ -25,7 +25,7 @@ export default async function PaginaUsuarios({ searchParams }: { searchParams: P
             <tbody>
               {usuarios.map((x) => (
                 <tr key={x.id}>
-                  <td><Link href={`/configuracoes/usuarios/${x.id}`} className="font-medium text-marca hover:underline">{x.nome}</Link><div className="text-xs text-suave">{x.email}{x.cargo ? ` · ${x.cargo}` : ""}</div></td>
+                  <td><Link href={`/configuracoes/usuarios/${x.id}`} className="font-medium text-texto underline-offset-4 hover:underline decoration-destaque decoration-2">{x.nome}</Link><div className="text-xs text-suave">{x.email}{x.cargo ? ` · ${x.cargo}` : ""}</div></td>
                   <td>{x.perfilNome}</td>
                   <td className="whitespace-nowrap text-suave">{x.ultimoLoginEm ? formatarData(x.ultimoLoginEm) : "Nunca"}</td>
                   <td>{x.ativo ? <Selo tom="verde">Ativo</Selo> : <Selo tom="vermelho">Inativo</Selo>}</td>

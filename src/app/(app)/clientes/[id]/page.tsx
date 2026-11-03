@@ -29,7 +29,7 @@ export default async function EditarCliente({ params }: { params: Promise<{ id: 
       {podeEditar ? <FormCliente acao={salvarClienteAcao.bind(null, id)} c={c} /> : <Cartao><p className="text-sm">{c.email} · {c.telefone}</p></Cartao>}
       <Cartao titulo={`Obras do cliente · ${obras.length}`}>
         {obras.length === 0 ? <p className="text-sm text-suave">Nenhuma obra.</p> : (
-          <ul className="space-y-1 text-sm">{obras.map((o) => <li key={o.id} className="flex items-center gap-2"><Link href={`/obras/${o.id}`} className="text-marca hover:underline">{o.codigo} · {o.nome}</Link><SeloSituacao situacao={o.situacao} /></li>)}</ul>
+          <ul className="space-y-1 text-sm">{obras.map((o) => <li key={o.id} className="flex items-center gap-2"><Link href={`/obras/${o.id}`} className="text-texto underline-offset-4 hover:underline decoration-destaque decoration-2">{o.codigo} · {o.nome}</Link><SeloSituacao situacao={o.situacao} /></li>)}</ul>
         )}
       </Cartao>
     </div>

@@ -31,7 +31,7 @@ export const empresa = pgTable("empresa", {
   agencia: text(),
   conta: text(),
   pix: text(),
-  corPrimaria: text().notNull().default("#1e3a5f"),
+  corPrimaria: text().notNull().default("#111111"),
   parametrosOrcamento: jsonb().$type<ParametrosOrcamento>().notNull(),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
@@ -87,7 +87,7 @@ export const tentativaLogin = pgTable("tentativa_login", {
 
 export const acaoAuditoria = pgEnum("acao_auditoria", [
   "CRIAR", "EDITAR", "EXCLUIR", "RESTAURAR", "LOGIN", "LOGIN_FALHOU", "LOGOUT", "TROCAR_SENHA",
-  "VER_DADOS_SENSIVEIS", "ANEXAR", "REMOVER_ANEXO", "GERAR_ESTRUTURA",
+  "VER_DADOS_SENSIVEIS", "ANEXAR", "REMOVER_ANEXO", "GERAR_ESTRUTURA", "MOVER", "COMENTAR",
 ]);
 
 export const auditoria = pgTable("auditoria", {
@@ -274,3 +274,82 @@ export const anexo = pgTable("anexo", {
   criadoEm: criadoEm(),
   excluidoEm: timestamp({ withTimezone: true }),
 }, (t) => [index("anexo_entidade_idx").on(t.entidade, t.entidadeId)]);
+
+// ───────────────────────────── Quadro (kanban/calendário do escritório) ─────────────────────────────
+
+export const quadro = pgTable("quadro", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  nome: text().notNull(),
+  descricao: text(),
+  arquivado: boolean().notNull().default(false),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+});
+
+/** Colunas = etapas do fluxo (ex.: A fazer → Em andamento → Revisão → Concluído). */
+export const quadroColuna = pgTable("quadro_coluna", {
+  id: id(),
+  quadroId: uuid().notNull().references(() => quadro.id, { onDelete: "cascade" }),
+  nome: text().notNull(),
+  ordem: integer().notNull(),
+  /** Cartões nesta coluna contam como concluídos (não ficam "atrasados"). */
+  concluida: boolean().notNull().default(false),
+  /** Limite de cartões em andamento (WIP); nulo = sem limite. */
+  limite: integer(),
+  criadoEm: criadoEm(),
+}, (t) => [index("quadro_coluna_quadro_idx").on(t.quadroId, t.ordem)]);
+
+export const etiqueta = pgTable("etiqueta", {
+  id: id(),
+  quadroId: uuid().notNull().references(() => quadro.id, { onDelete: "cascade" }),
+  nome: text().notNull(),
+  cor: text().notNull(),
+}, (t) => [uniqueIndex("etiqueta_nome_uq").on(t.quadroId, sql`lower(${t.nome})`)]);
+
+export const cartao = pgTable("cartao", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  quadroId: uuid().notNull().references(() => quadro.id, { onDelete: "cascade" }),
+  colunaId: uuid().notNull().references(() => quadroColuna.id),
+  titulo: text().notNull(),
+  descricao: text(),
+  responsavelId: uuid().references(() => usuario.id),
+  obraId: uuid().references(() => obra.id),
+  dataInicio: date({ mode: "string" }),
+  dataEntrega: date({ mode: "string" }),
+  /** Posição fracionária dentro da coluna — permite inserir entre dois cartões sem renumerar. */
+  posicao: numeric({ precision: 20, scale: 10, mode: "number" }).notNull(),
+  concluidoEm: timestamp({ withTimezone: true }),
+  arquivado: boolean().notNull().default(false),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [
+  index("cartao_coluna_idx").on(t.colunaId, t.posicao),
+  index("cartao_entrega_idx").on(t.empresaId, t.dataEntrega),
+  index("cartao_responsavel_idx").on(t.responsavelId),
+]);
+
+export const cartaoEtiqueta = pgTable("cartao_etiqueta", {
+  cartaoId: uuid().notNull().references(() => cartao.id, { onDelete: "cascade" }),
+  etiquetaId: uuid().notNull().references(() => etiqueta.id, { onDelete: "cascade" }),
+}, (t) => [primaryKey({ columns: [t.cartaoId, t.etiquetaId] })]);
+
+export const cartaoChecklist = pgTable("cartao_checklist", {
+  id: id(),
+  cartaoId: uuid().notNull().references(() => cartao.id, { onDelete: "cascade" }),
+  texto: text().notNull(),
+  feito: boolean().notNull().default(false),
+  ordem: integer().notNull(),
+  criadoEm: criadoEm(),
+});
+
+export const cartaoComentario = pgTable("cartao_comentario", {
+  id: id(),
+  cartaoId: uuid().notNull().references(() => cartao.id, { onDelete: "cascade" }),
+  usuarioId: uuid().notNull().references(() => usuario.id),
+  texto: text().notNull(),
+  criadoEm: criadoEm(),
+}, (t) => [index("cartao_comentario_idx").on(t.cartaoId, t.criadoEm)]);

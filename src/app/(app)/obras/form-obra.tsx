@@ -27,7 +27,7 @@ export function FormObra({ acao, obra, clientes, usuarios, cancelar }: {
           <div className="sm:col-span-3">
             <CampoSelecao nome="clienteId" rotulo="Cliente" obrigatorio vazio="Selecione…" defaultValue={obra?.clienteId}
               opcoes={clientes.map((c) => ({ valor: c.id, rotulo: c.nome }))}
-              ajuda={<>Não encontrou? <Link href="/clientes/novo" className="text-marca underline" target="_blank">Cadastre o cliente</Link> e recarregue.</>} />
+              ajuda={<>Não encontrou? <Link href="/clientes/novo" className="text-texto underline decoration-destaque decoration-2 underline-offset-2" target="_blank">Cadastre o cliente</Link> e recarregue.</>} />
           </div>
           <div className="sm:col-span-3"><Campo nome="tipoObra" rotulo="Tipo de obra" defaultValue={obra?.tipoObra ?? ""} placeholder="Reforma comercial, residencial…" list="tipos-obra" /></div>
           <datalist id="tipos-obra">
@@ -66,7 +66,7 @@ export function FormObra({ acao, obra, clientes, usuarios, cancelar }: {
 
       <div className="flex gap-2">
         <BotaoEnviar>{obra ? "Salvar alterações" : "Cadastrar obra e gerar estrutura"}</BotaoEnviar>
-        <Link href={cancelar} className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-slate-100">Cancelar</Link>
+        <Link href={cancelar} className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-zinc-100">Cancelar</Link>
       </div>
     </Formulario>
   );

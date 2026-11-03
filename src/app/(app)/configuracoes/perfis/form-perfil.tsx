@@ -30,7 +30,7 @@ export function FormPerfil({ acao, perfil, bloqueado }: {
                     <td key={a} className="text-center">
                       {ACOES_POR_MODULO[m].includes(a)
                         ? <input type="checkbox" name={`perm_${m}`} value={a} defaultChecked={perfil?.permissoes[m]?.includes(a)} aria-label={`${MODULOS[m]}: ${ACOES[a]}`} className="size-4 accent-[var(--marca)]" />
-                        : <span className="text-slate-300">—</span>}
+                        : <span className="text-zinc-300">—</span>}
                     </td>
                   ))}
                 </tr>
@@ -42,7 +42,7 @@ export function FormPerfil({ acao, perfil, bloqueado }: {
       </fieldset>
       <div className="flex gap-2">
         {!bloqueado && <BotaoEnviar>Salvar perfil</BotaoEnviar>}
-        <Link href="/configuracoes/perfis" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-slate-100">Voltar</Link>
+        <Link href="/configuracoes/perfis" className="rounded-lg px-4 py-2 text-sm font-medium text-suave hover:bg-zinc-100">Voltar</Link>
       </div>
     </Formulario>
   );

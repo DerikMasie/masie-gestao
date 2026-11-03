@@ -34,8 +34,8 @@ export function BarraPrazo({ fracao }: { fracao: number }) {
   const pct = Math.min(fracao, 1) * 100;
   return (
     <div className="flex items-center gap-2" title={`${Math.round(fracao * 100)}% do prazo contratual decorrido`}>
-      <div className="h-2 w-full min-w-16 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: fracao > 1 ? "#d03b3b" : "#2a78d6" }} />
+      <div className="h-2 w-full min-w-16 overflow-hidden rounded-full bg-zinc-100">
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: fracao > 1 ? "#d03b3b" : "#3f3f46" }} />
       </div>
       <span className="tabular w-10 text-right text-xs text-suave">{Math.round(fracao * 100)}%</span>
     </div>

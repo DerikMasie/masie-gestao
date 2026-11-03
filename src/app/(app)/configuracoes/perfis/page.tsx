@@ -18,7 +18,7 @@ export default async function PaginaPerfis({ searchParams }: { searchParams: Pro
       {salvo && <div className="mb-4"><Aviso tom="sucesso">Perfil salvo.</Aviso></div>}
       <div className="grid gap-4 md:grid-cols-2">
         {perfis.map((p) => (
-          <Cartao key={p.id} titulo={<Link href={`/configuracoes/perfis/${p.id}`} className="hover:text-marca">{p.nome}</Link>}
+          <Cartao key={p.id} titulo={<Link href={`/configuracoes/perfis/${p.id}`} className="hover:underline decoration-destaque decoration-2 underline-offset-4">{p.nome}</Link>}
             acoes={<span className="flex gap-1">{p.sistema && <Selo>Padrão</Selo>}<Selo tom="azul">{p.usuarios} usuário(s)</Selo></span>}>
             <p className="text-sm text-suave">{p.descricao}</p>
             <p className="mt-2 text-sm">{p.acessoTodasObras ? "Acesso a todas as obras" : "Somente obras vinculadas"}</p>

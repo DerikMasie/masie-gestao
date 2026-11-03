@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   if (!/^[0-9a-f-]{36}$/.test(id)) return new Response("Não encontrado", { status: 404 });
   const a = await obterAnexo(db, u.empresaId, id);
   if (!a) return new Response("Não encontrado", { status: 404 });
-  const modulo = a.entidade === "obra" ? "obras" : a.entidade === "fornecedor" ? "fornecedores" : a.entidade === "cliente" ? "clientes" : null;
+  const modulo = a.entidade === "obra" ? "obras" : a.entidade === "fornecedor" ? "fornecedores" : a.entidade === "cliente" ? "clientes" : a.entidade === "cartao" ? "quadro" : null;
   if (!modulo || !pode(u.perfil.permissoes, modulo)) return new Response("Sem permissão", { status: 403 });
   if (a.obraId && !(await podeAcessarObra(u, a.obraId))) return new Response("Sem permissão", { status: 403 });
 

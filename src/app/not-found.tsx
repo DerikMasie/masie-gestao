@@ -6,7 +6,7 @@ export default function NaoEncontrado() {
       <div className="text-center">
         <h1 className="text-xl font-semibold">Página não encontrada</h1>
         <p className="mt-2 text-sm text-suave">O registro pode ter sido excluído ou você não tem acesso a ele.</p>
-        <Link href="/" className="mt-4 inline-block text-sm font-medium text-marca">Voltar ao início</Link>
+        <Link href="/" className="mt-4 inline-block text-sm font-medium text-texto">Voltar ao início</Link>
       </div>
     </main>
   );

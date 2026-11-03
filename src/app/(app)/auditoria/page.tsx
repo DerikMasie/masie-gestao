@@ -33,8 +33,8 @@ export default async function PaginaAuditoria({ searchParams }: { searchParams: 
         </form>
         <AuditoriaLista linhas={linhas.slice(0, 50)} mostrarEntidade />
         <div className="flex justify-between border-t border-borda px-5 py-3 text-sm">
-          {pagina > 1 ? <Link href={qs(pagina - 1)} className="text-marca">← Mais recentes</Link> : <span />}
-          {temMais && <Link href={qs(pagina + 1)} className="text-marca">Mais antigos →</Link>}
+          {pagina > 1 ? <Link href={qs(pagina - 1)} className="font-medium underline decoration-destaque decoration-2 underline-offset-4">← Mais recentes</Link> : <span />}
+          {temMais && <Link href={qs(pagina + 1)} className="font-medium underline decoration-destaque decoration-2 underline-offset-4">Mais antigos →</Link>}
         </div>
       </Cartao>
     </>

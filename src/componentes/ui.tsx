@@ -6,7 +6,7 @@ export function CabecalhoPagina({ titulo, subtitulo, acoes, voltar }: { titulo: 
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        {voltar && <Link href={voltar.href} className="mb-1 inline-block text-sm text-suave hover:text-marca">← {voltar.rotulo}</Link>}
+        {voltar && <Link href={voltar.href} className="mb-1 inline-block text-sm text-suave hover:text-texto">← {voltar.rotulo}</Link>}
         <h1 className="truncate text-2xl font-semibold tracking-tight">{titulo}</h1>
         {subtitulo && <p className="mt-1 text-sm text-suave">{subtitulo}</p>}
       </div>
@@ -32,9 +32,9 @@ export function Cartao({ titulo, acoes, children, className, semPadding }: { tit
 type Variante = "primario" | "secundario" | "perigo" | "fantasma";
 const estiloBotao: Record<Variante, string> = {
   primario: "bg-marca text-white hover:opacity-90",
-  secundario: "border border-borda bg-white text-texto hover:bg-slate-50",
+  secundario: "border border-borda bg-white text-texto hover:bg-zinc-50",
   perigo: "bg-perigo text-white hover:opacity-90",
-  fantasma: "text-marca hover:bg-slate-100",
+  fantasma: "text-texto hover:bg-zinc-100",
 };
 const baseBotao = "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -47,12 +47,13 @@ export function LinkBotao({ variante = "primario", className, ...p }: ComponentP
 }
 
 const tons = {
-  cinza: "bg-slate-100 text-slate-700",
-  azul: "bg-blue-50 text-blue-700",
+  cinza: "bg-zinc-100 text-zinc-700",
+  destaque: "bg-destaque-suave text-destaque-texto",
+  azul: "bg-zinc-800 text-white",
   verde: "bg-green-50 text-green-700",
   amarelo: "bg-amber-50 text-amber-800",
   vermelho: "bg-red-50 text-red-700",
-  roxo: "bg-violet-50 text-violet-700",
+  roxo: "bg-zinc-200 text-zinc-800",
 } as const;
 export type Tom = keyof typeof tons;
 
@@ -82,7 +83,7 @@ export function Vazio({ titulo, children }: { titulo: string; children?: ReactNo
 export function Tabela({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm [&_td]:px-4 [&_td]:py-2.5 [&_th]:px-4 [&_th]:py-2.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-suave [&_thead]:bg-slate-50 [&_tbody_tr]:border-t [&_tbody_tr]:border-borda [&_tbody_tr:hover]:bg-slate-50/70">
+      <table className="w-full text-left text-sm [&_td]:px-4 [&_td]:py-2.5 [&_th]:px-4 [&_th]:py-2.5 [&_th]:text-xs [&_th]:font-semibold [&_th]:uppercase [&_th]:tracking-wide [&_th]:text-suave [&_thead]:bg-zinc-50 [&_tbody_tr]:border-t [&_tbody_tr]:border-borda [&_tbody_tr:hover]:bg-destaque-suave/40">
         {children}
       </table>
     </div>
@@ -98,7 +99,7 @@ export function ColunaOrdenavel({ campo, rotulo, params, base, className }: { ca
     <th className={className}>
       <Link href={`${base}?${q}`} className="inline-flex items-center gap-1 hover:text-texto">
         {rotulo}
-        <span aria-hidden className={ativa ? "text-marca" : "opacity-30"}>{ativa && params.dir === "asc" ? "▲" : "▼"}</span>
+        <span aria-hidden className={ativa ? "text-texto" : "opacity-30"}>{ativa && params.dir === "asc" ? "▲" : "▼"}</span>
       </Link>
     </th>
   );
@@ -122,7 +123,7 @@ export function Abas({ abas, ativa, base }: { abas: { id: string; rotulo: string
     <nav className="mb-6 flex gap-1 overflow-x-auto border-b border-borda">
       {abas.map((a) => (
         <Link key={a.id} href={`${base}?aba=${a.id}`}
-          className={clsx("whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium", a.id === ativa ? "border-marca text-marca" : "border-transparent text-suave hover:text-texto")}>
+          className={clsx("whitespace-nowrap border-b-[3px] px-4 py-2 text-sm font-medium", a.id === ativa ? "border-destaque text-texto" : "border-transparent text-suave hover:text-texto")}>
           {a.rotulo}
         </Link>
       ))}

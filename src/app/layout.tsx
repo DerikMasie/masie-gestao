@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Gestão de obras, orçamento, planejamento e financeiro da Masie Engenharia",
   robots: { index: false, follow: false },
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#1e3a5f" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#0d0d0d" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

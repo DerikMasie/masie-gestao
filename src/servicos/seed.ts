@@ -1,6 +1,8 @@
 import { eq, sql } from "drizzle-orm";
 import type { BancoDados } from "@/db";
-import { empresa, etapaPadrao, perfil, usuario } from "@/db/schema";
+import { empresa, etapaPadrao, perfil, quadro, quadroColuna, etiqueta, usuario } from "@/db/schema";
+import { COLUNAS_PADRAO, ETIQUETAS_PADRAO } from "@/dominio/quadro";
+import type { Modulo } from "@/dominio/permissoes";
 import { ETAPAS_PADRAO } from "@/dominio/obra";
 import { PARAMETROS_PADRAO } from "@/dominio/orcamento";
 import { PERFIS_PADRAO } from "@/dominio/permissoes";
@@ -18,14 +20,36 @@ export async function semear(banco: BancoDados, admin: { email: string; senha: s
       [emp] = await tx.insert(empresa).values({
         razaoSocial: "Masie Engenharia", nomeFantasia: "Masie Engenharia", cnpj: "27527577000102",
         banco: "Itaú", agencia: "0392", conta: "08371-3", pix: "27.527.577/0001-02",
-        corPrimaria: "#1e3a5f", parametrosOrcamento: PARAMETROS_PADRAO,
+        corPrimaria: "#111111", parametrosOrcamento: PARAMETROS_PADRAO,
       }).returning();
     }
     const empresaId = emp!.id;
 
-    const existentes = await tx.select({ nome: perfil.nome, id: perfil.id }).from(perfil).where(eq(perfil.empresaId, empresaId));
+    // Atualização de identidade visual (Fase 2.1): azul provisório → preto Masie.
+    if (emp!.corPrimaria === "#1e3a5f") await tx.update(empresa).set({ corPrimaria: "#111111" }).where(eq(empresa.id, empresaId));
+
+    const existentes = await tx.select().from(perfil).where(eq(perfil.empresaId, empresaId));
     for (const p of PERFIS_PADRAO) {
-      if (!existentes.some((e) => e.nome === p.nome)) await tx.insert(perfil).values({ ...p, empresaId, sistema: true });
+      const atual = existentes.find((e) => e.nome === p.nome);
+      if (!atual) {
+        await tx.insert(perfil).values({ ...p, empresaId, sistema: true });
+        continue;
+      }
+      // Módulos novos entram nos perfis padrão sem sobrescrever o que o administrador já ajustou.
+      if (atual.sistema) {
+        const faltantes = (Object.keys(p.permissoes) as Modulo[]).filter((m) => !(m in atual.permissoes));
+        if (faltantes.length) {
+          const novas = { ...atual.permissoes, ...Object.fromEntries(faltantes.map((m) => [m, p.permissoes[m]])) };
+          await tx.update(perfil).set({ permissoes: novas }).where(eq(perfil.id, atual.id));
+        }
+      }
+    }
+
+    const [algumQuadro] = await tx.select({ id: quadro.id }).from(quadro).where(eq(quadro.empresaId, empresaId)).limit(1);
+    if (!algumQuadro) {
+      const [q] = await tx.insert(quadro).values({ empresaId, nome: "Escritório", descricao: "Atividades internas do escritório" }).returning();
+      await tx.insert(quadroColuna).values(COLUNAS_PADRAO.map((c, i) => ({ ...c, quadroId: q!.id, ordem: i + 1 })));
+      await tx.insert(etiqueta).values(ETIQUETAS_PADRAO.map((e) => ({ ...e, quadroId: q!.id })));
     }
     const [admPerfil] = await tx.select().from(perfil).where(sql`${perfil.empresaId} = ${empresaId} and ${perfil.nome} = 'Administrador'`);
 

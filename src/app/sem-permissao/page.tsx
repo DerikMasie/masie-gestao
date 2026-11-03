@@ -6,7 +6,7 @@ export default function SemPermissao() {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Acesso não autorizado</h1>
         <p className="mt-2 text-sm text-suave">Seu perfil não tem permissão para acessar esta página. Se precisar do acesso, fale com o administrador.</p>
-        <Link href="/" className="mt-4 inline-block text-sm font-medium text-marca">Voltar ao início</Link>
+        <Link href="/" className="mt-4 inline-block text-sm font-medium text-texto">Voltar ao início</Link>
       </div>
     </main>
   );
