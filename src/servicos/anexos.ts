@@ -36,19 +36,19 @@ export function validarArquivo(nome: string, tipo: string, dados: Buffer): strin
 }
 
 function pastaBase() {
-  return path.resolve(process.env.ARMAZENAMENTO_DIR ?? "./storage");
+  return path.resolve(/* turbopackIgnore: true */ process.env.ARMAZENAMENTO_DIR ?? "./storage");
 }
 
 /** Driver local de armazenamento. Em produção, substituir por armazenamento de objetos privado (S3/Supabase Storage). */
 async function gravar(chave: string, dados: Buffer) {
-  const destino = path.join(pastaBase(), chave);
+  const destino = path.join(/* turbopackIgnore: true */ pastaBase(), chave);
   await mkdir(path.dirname(destino), { recursive: true });
   await writeFile(destino, dados, { flag: "wx" });
 }
 
 export async function lerConteudo(chave: string): Promise<Buffer> {
   const base = pastaBase();
-  const destino = path.resolve(base, chave);
+  const destino = path.resolve(/* turbopackIgnore: true */ base, chave);
   if (!destino.startsWith(base + path.sep)) throw new Error("Caminho inválido");
   return readFile(destino);
 }
