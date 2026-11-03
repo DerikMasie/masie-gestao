@@ -128,6 +128,7 @@ export function AcaoConfirmada({ acao, confirmacao, children, campos, variante =
       {Object.entries(campos ?? {}).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
       <CtxPendente.Provider value={pendente}><BotaoEnviar variante={variante}>{children}</BotaoEnviar></CtxPendente.Provider>
       {estado.erro && <p role="alert" className="mt-2 text-xs text-perigo">{estado.erro}</p>}
+      {estado.ok && estado.mensagem && <p role="status" className="mt-2 text-xs text-sucesso">{estado.mensagem}</p>}
       {estado.segredo && (
         <p className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">
           Nova senha provisória (exibida só agora): <code className="select-all font-semibold">{estado.segredo}</code>

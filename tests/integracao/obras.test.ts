@@ -33,7 +33,7 @@ describe("cadastro de obra gera a estrutura operacional", () => {
 
     const [orc] = await db.select().from(orcamento).where(eq(orcamento.obraId, obra.id));
     expect(orc).toMatchObject({ numero: 1, revisao: 0, status: "RASCUNHO" });
-    expect(orc!.parametros.formula).toBe("POR_DENTRO");
+    expect(orc!.parametros).toMatchObject({ bdiMaoDeObra: 0.3, bdiMaterial: 0.1, impostos: 0.105, formaImposto: "POR_DENTRO" });
 
     const vinc = await db.select().from(usuarioObra).where(eq(usuarioObra.obraId, obra.id));
     expect(vinc).toHaveLength(1);

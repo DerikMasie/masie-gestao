@@ -5,6 +5,7 @@ import { COLUNAS_PADRAO, ETIQUETAS_PADRAO } from "@/dominio/quadro";
 import type { Modulo } from "@/dominio/permissoes";
 import { ETAPAS_PADRAO } from "@/dominio/obra";
 import { PARAMETROS_PADRAO } from "@/dominio/orcamento";
+import { orcamento } from "@/db/schema";
 import { PERFIS_PADRAO } from "@/dominio/permissoes";
 import { gerarHashSenha } from "@/lib/auth/senha";
 import { registrarAuditoria } from "./auditoria";
@@ -27,6 +28,11 @@ export async function semear(banco: BancoDados, admin: { email: string; senha: s
 
     // Atualização de identidade visual (Fase 2.1): azul provisório → preto Masie.
     if (emp!.corPrimaria === "#1e3a5f") await tx.update(empresa).set({ corPrimaria: "#111111" }).where(eq(empresa.id, empresaId));
+    // Parâmetros de orçamento (Fase 3): formato antigo (lucro/fórmula) → padrões definidos pela Masie (BDI MO 30%, material 10%, imposto 10,5%).
+    if (!("bdiMaoDeObra" in (emp!.parametrosOrcamento as object))) {
+      await tx.update(empresa).set({ parametrosOrcamento: PARAMETROS_PADRAO }).where(eq(empresa.id, empresaId));
+      await tx.update(orcamento).set({ parametros: PARAMETROS_PADRAO }).where(sql`${orcamento.empresaId} = ${empresaId} and not (${orcamento.parametros} ? 'bdiMaoDeObra')`);
+    }
 
     const existentes = await tx.select().from(perfil).where(eq(perfil.empresaId, empresaId));
     for (const p of PERFIS_PADRAO) {

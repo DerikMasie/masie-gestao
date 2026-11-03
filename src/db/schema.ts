@@ -5,7 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
-  bigserial, boolean, date, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey,
+  bigserial, boolean, date, doublePrecision, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey,
   text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import type { MatrizPermissoes } from "@/dominio/permissoes";
@@ -253,10 +253,52 @@ export const orcamento = pgTable("orcamento", {
   titulo: text().notNull(),
   status: statusOrcamento().notNull().default("RASCUNHO"),
   parametros: jsonb().$type<ParametrosOrcamento>().notNull(),
+  observacoes: text(),
+  /** Origem do conteúdo (ex.: "Importado de Orçamento Padrão.xlsx", "Cópia da rev. 2"). */
+  origem: text(),
+  /** Totais congelados quando o orçamento sai de rascunho (histórico imutável da proposta). */
+  totalCusto: dinheiro(),
+  totalVenda: dinheiro(),
+  totalImposto: dinheiro(),
+  totalProposta: dinheiro(),
+  enviadoEm: timestamp({ withTimezone: true }),
+  decididoEm: timestamp({ withTimezone: true }),
+  decididoPor: uuid().references(() => usuario.id),
   criadoPor: uuid().references(() => usuario.id),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
-}, (t) => [uniqueIndex("orcamento_numero_rev_uq").on(t.obraId, t.numero, t.revisao)]);
+}, (t) => [
+  uniqueIndex("orcamento_numero_rev_uq").on(t.obraId, t.numero, t.revisao),
+  // Apenas um orçamento-base por obra.
+  uniqueIndex("orcamento_base_uq").on(t.obraId).where(sql`${t.status} = 'BASE'`),
+]);
+
+/** Quantidades e preços unitários com a mesma precisão do Excel (double), para reproduzir planilhas como =500/3. */
+const quantidade = () => doublePrecision();
+
+/** Itens (serviços) do orçamento, agrupados pelas etapas da EAP da obra. */
+export const orcamentoItem = pgTable("orcamento_item", {
+  id: id(),
+  orcamentoId: uuid().notNull().references(() => orcamento.id, { onDelete: "cascade" }),
+  etapaId: uuid().notNull().references(() => obraEtapa.id),
+  /** Subgrupo dentro da etapa (ex.: "Licenciamento/acompanhamento/seguro"). */
+  grupo: text(),
+  ordem: integer().notNull(),
+  descricao: text().notNull(),
+  unidade: text(),
+  quantidade: quantidade().notNull().default(0),
+  /** Memória de cálculo da quantidade (ex.: "parede sala 12,4 + quarto 9,8"). */
+  memoriaCalculo: text(),
+  quebra: doublePrecision().notNull().default(1),
+  custoUnitarioMaoDeObra: quantidade().notNull().default(0),
+  custoUnitarioMaterial: quantidade().notNull().default(0),
+  /** BDI específico do item (nulo = usa o do orçamento). */
+  bdiMaoDeObra: numeric({ precision: 7, scale: 4, mode: "number" }),
+  bdiMaterial: numeric({ precision: 7, scale: 4, mode: "number" }),
+  observacao: text(),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [index("orcamento_item_orc_idx").on(t.orcamentoId, t.etapaId, t.ordem)]);
 
 export const anexo = pgTable("anexo", {
   id: id(),

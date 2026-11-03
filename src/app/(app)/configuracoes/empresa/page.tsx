@@ -2,17 +2,17 @@ import { db } from "@/db";
 import { formatarDocumento } from "@/dominio/documentos";
 import { exigirPermissaoPagina, temPermissao } from "@/lib/auth/atual";
 import { obterEmpresa } from "@/servicos/cadastros";
-import { BotaoEnviar, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
+import { BotaoEnviar, Campo, Formulario } from "@/componentes/formulario";
+import { CamposParametros } from "@/componentes/campos-parametros";
+import { normalizarParametros } from "@/dominio/orcamento";
 import { CabecalhoPagina, Cartao } from "@/componentes/ui";
 import { salvarEmpresaAcao } from "../acoes";
 
 export const metadata = { title: "Empresa" };
-const pct = (v: number) => String(Number((v * 100).toFixed(2))).replace(".", ",");
 
 export default async function PaginaEmpresa() {
   const u = await exigirPermissaoPagina("configuracoes");
   const e = (await obterEmpresa(db, u.empresaId))!;
-  const p = e.parametrosOrcamento;
   const editar = temPermissao(u, "configuracoes", "editar");
   return (
     <div className="max-w-4xl">
@@ -39,18 +39,8 @@ export default async function PaginaEmpresa() {
             </div>
           </Cartao>
           <Cartao titulo="Parâmetros padrão de orçamento">
-            <div className="grid gap-4 sm:grid-cols-4">
-              <Campo nome="lucroMaoDeObra" rotulo="Lucro mão de obra (%)" obrigatorio defaultValue={pct(p.lucroMaoDeObra)} inputMode="decimal" />
-              <Campo nome="lucroMaterial" rotulo="Lucro material (%)" obrigatorio defaultValue={pct(p.lucroMaterial)} inputMode="decimal" />
-              <Campo nome="impostos" rotulo="Impostos (%)" obrigatorio defaultValue={pct(p.impostos)} inputMode="decimal" />
-              <CampoSelecao nome="formula" rotulo="Fórmula de preço" defaultValue={p.formula} opcoes={[
-                { valor: "POR_DENTRO", rotulo: "Por dentro (recomendada)" }, { valor: "PLANILHA_LEGADA", rotulo: "Legada da planilha" },
-              ]} />
-            </div>
-            <p className="mt-3 text-xs text-suave">
-              <b>Por dentro:</b> preço = custo × (1 + lucro) ÷ (1 − impostos), o imposto incide sobre o preço. <b>Legada:</b> preço = custo × (1 + lucro + impostos), como na planilha AO. Com 50% de lucro e 10% de impostos, a legada gera margem líquida de 27,5% em vez de 30%.
-              Valores iniciais extraídos da obra Palco: MO ×1,60 (50% + 10%) e material ×1,22 (12% + 10%).
-            </p>
+            <CamposParametros p={normalizarParametros(e.parametrosOrcamento)} />
+            <p className="mt-3 text-xs text-suave">Valem para os orçamentos criados a partir de agora; cada orçamento pode ter os seus próprios valores. Na forma <b>por dentro</b> o imposto incide sobre o valor final da proposta (como no faturamento real); na forma <b>por fora</b>, como na planilha, ele é somado sobre o preço sem imposto e fica cerca de 1% do contrato abaixo do devido.</p>
           </Cartao>
         </fieldset>
         {editar && <BotaoEnviar>Salvar</BotaoEnviar>}

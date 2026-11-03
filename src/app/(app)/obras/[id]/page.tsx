@@ -9,14 +9,17 @@ import { listarAnexos } from "@/servicos/anexos";
 import { equipeObra, estruturaObra, obterObra } from "@/servicos/obras";
 import { listarAuditoria } from "@/servicos/painel";
 import { listarUsuariosAtivos } from "@/servicos/usuarios";
+import { listarOrcamentosObra, orcamentosParaCopiar, STATUS_ORCAMENTO } from "@/servicos/orcamentos";
+import { importarPlanilhaAcao, novaRevisaoAcao } from "./orcamentos/acoes";
 import { AuditoriaLista } from "@/componentes/auditoria-lista";
-import { AcaoConfirmada, BotaoEnviar, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
+import { AcaoConfirmada, BotaoEnviar, Caixa, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
 import { BarraPrazo, SeloPrazo, SeloSituacao } from "@/componentes/rotulos";
 import { Abas, Aviso, CabecalhoPagina, Cartao, Dl, Indicador, LinkBotao, Selo, Tabela } from "@/componentes/ui";
 import { anexarAcao, desvincularAcao, excluirObraAcao, removerAnexoAcao, vincularAcao } from "../acoes";
 
 const ABAS = [
   { id: "resumo", rotulo: "Resumo" },
+  { id: "orcamento", rotulo: "Orçamento" },
   { id: "estrutura", rotulo: "Estrutura" },
   { id: "equipe", rotulo: "Equipe e acesso" },
   { id: "documentos", rotulo: "Documentos" },
@@ -80,7 +83,8 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
             <ul className="grid gap-2 text-sm sm:grid-cols-2">
               <li className="flex items-center justify-between gap-2"><span>Cadastro, ficha técnica, equipe, documentos e histórico</span><Selo tom="verde">Disponível</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Centro de custo, EAP e calendário semanal</span><Selo tom="verde">Gerado</Selo></li>
-              <li className="flex items-center justify-between gap-2"><span>Orçamento, compras, notas fiscais e financeiro</span><Selo>Fase 3</Selo></li>
+              <li className="flex items-center justify-between gap-2"><span>Orçamento (EAP, BDI, curva ABC, revisões, importação do Excel)</span><Selo tom="verde">Disponível</Selo></li>
+              <li className="flex items-center justify-between gap-2"><span>Compras, notas fiscais e financeiro</span><Selo>Fase 3</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Planejamento semanal, medições e aditivos</span><Selo>Fase 4</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Relatório semanal em PDF e painel gerencial</span><Selo>Fase 5</Selo></li>
             </ul>
@@ -93,11 +97,50 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
         </div>
       )}
 
+      {aba === "orcamento" && <AbaOrcamento obraId={id} empresaId={u.empresaId} podeEditar={temPermissao(u, "orcamentos", "criar")} verOrc={temPermissao(u, "orcamentos")} />}
       {aba === "estrutura" && <AbaEstrutura obraId={id} />}
       {aba === "equipe" && <AbaEquipe obraId={id} empresaId={u.empresaId} podeEditar={podeEditar} />}
       {aba === "documentos" && <AbaDocumentos obraId={id} empresaId={u.empresaId} podeEditar={podeEditar} />}
       {aba === "historico" && <AbaHistorico obraId={id} empresaId={u.empresaId} />}
     </>
+  );
+}
+
+async function AbaOrcamento({ obraId, empresaId, podeEditar, verOrc }: { obraId: string; empresaId: string; podeEditar: boolean; verOrc: boolean }) {
+  if (!verOrc) return <Aviso>Seu perfil não tem acesso ao módulo de orçamentos.</Aviso>;
+  const lista = await listarOrcamentosObra(db, empresaId, obraId);
+  const numeros = [...new Set(lista.map((o) => o.numero))];
+  return (
+    <div className="grid gap-6 lg:grid-cols-3">
+      <Cartao titulo="Orçamentos e revisões" className="lg:col-span-2" semPadding>
+        <Tabela>
+          <thead><tr><th>Orçamento</th><th>Situação</th><th className="text-right">Custo</th><th className="text-right">Proposta</th><th>Origem</th>{podeEditar && <th />}</tr></thead>
+          <tbody>
+            {lista.map((o) => (
+              <tr key={o.id}>
+                <td><Link href={`/obras/${obraId}/orcamentos/${o.id}`} className="font-medium underline-offset-4 hover:underline decoration-destaque decoration-2">nº {o.numero} · rev. {o.revisao}</Link><div className="text-xs text-suave">{o.titulo}{o.itens != null ? ` · ${o.itens} itens` : ""}</div></td>
+                <td><Selo tom={o.status === "BASE" ? "destaque" : o.status === "APROVADO" ? "verde" : o.status === "REJEITADO" ? "vermelho" : o.status === "ENVIADO" ? "azul" : "cinza"}>{STATUS_ORCAMENTO[o.status]}</Selo></td>
+                <td className="tabular whitespace-nowrap text-right">{formatarMoeda(o.custo)}</td>
+                <td className="tabular whitespace-nowrap text-right font-medium">{formatarMoeda(o.total)}</td>
+                <td className="max-w-48 truncate text-xs text-suave">{o.origem ?? "—"}</td>
+                {podeEditar && <td className="text-right"><AcaoConfirmada acao={novaRevisaoAcao.bind(null, obraId, o.id)} confirmacao={`Criar uma nova revisão (rascunho) a partir da rev. ${o.revisao}? A revisão atual fica preservada.`} variante="secundario">Nova revisão</AcaoConfirmada></td>}
+              </tr>
+            ))}
+          </tbody>
+        </Tabela>
+        <p className="border-t border-borda px-5 py-3 text-xs text-suave">Rascunhos são editáveis. Ao enviar ou aprovar, os valores ficam congelados; mudanças são feitas em nova revisão. O <b>orçamento-base</b> define o custo orçado da obra (verba por etapa).</p>
+      </Cartao>
+      {podeEditar && (
+        <Cartao titulo="Importar do Excel">
+          <Formulario acao={importarPlanilhaAcao.bind(null, obraId)}>
+            <Campo nome="arquivo" rotulo="Planilha (.xlsx)" type="file" accept=".xlsx" ajuda="Formato do Orçamento Padrão Masie (abas ORÇAMENTO e PROPOSTA). Arquivos .xlsm: salve como .xlsx." />
+            <CampoSelecao nome="numero" rotulo="Importar como nova revisão do" defaultValue={String(numeros[0] ?? 1)} opcoes={[...numeros.map((n) => ({ valor: String(n), rotulo: `Orçamento nº ${n}` })), { valor: String(Math.max(0, ...numeros) + 1), rotulo: `Novo orçamento nº ${Math.max(0, ...numeros) + 1}` }]} />
+            <Caixa nome="ignorarSemQuantidade" rotulo="Ignorar itens com quantidade zero" />
+            <BotaoEnviar>Importar</BotaoEnviar>
+          </Formulario>
+        </Cartao>
+      )}
+    </div>
   );
 }
 
@@ -114,14 +157,8 @@ async function AbaEstrutura({ obraId }: { obraId: string }) {
         </Cartao>
         <Cartao titulo="Orçamentos">
           <ul className="text-sm">
-            {e.orcamentos.map((o) => <li key={o.id} className="flex items-center justify-between py-1"><span>{o.titulo} · nº {o.numero}, rev. {o.revisao}</span><Selo tom="roxo">{o.status === "RASCUNHO" ? "Rascunho" : o.status}</Selo></li>)}
+            {e.orcamentos.map((o) => <li key={o.id} className="flex items-center justify-between py-1"><Link href={`/obras/${obraId}/orcamentos/${o.id}`} className="underline decoration-destaque decoration-2 underline-offset-4">{o.titulo} · nº {o.numero}, rev. {o.revisao}</Link><Selo tom={o.status === "BASE" ? "destaque" : "cinza"}>{STATUS_ORCAMENTO[o.status]}</Selo></li>)}
           </ul>
-          {e.orcamentos[0] && (
-            <p className="mt-3 text-xs text-suave">
-              Parâmetros herdados da empresa: lucro MO {formatarPercentual(e.orcamentos[0].parametros.lucroMaoDeObra)}, lucro material {formatarPercentual(e.orcamentos[0].parametros.lucroMaterial)},
-              impostos {formatarPercentual(e.orcamentos[0].parametros.impostos)}, fórmula {e.orcamentos[0].parametros.formula === "POR_DENTRO" ? "por dentro (imposto sobre o preço)" : "legada da planilha"}. O editor de itens chega na Fase 3.
-            </p>
-          )}
         </Cartao>
         <Cartao titulo={`Calendário semanal · ${e.semanas.length} semanas`}>
           <p className="text-sm">Semana 1: {formatarData(e.semanas[0]?.inicio)} a {formatarData(e.semanas[0]?.fim)} · última: semana {e.semanas.at(-1)?.numero} ({formatarData(e.semanas.at(-1)?.inicio)} a {formatarData(e.semanas.at(-1)?.fim)})</p>

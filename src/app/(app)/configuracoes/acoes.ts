@@ -15,8 +15,8 @@ import { z } from "zod";
 export async function salvarEmpresaAcao(_: EstadoForm, fd: FormData): Promise<EstadoForm> {
   return tratar(async () => {
     await exigirPermissao("configuracoes", "editar");
-    const { lucroMaoDeObra, lucroMaterial, impostos, formula, ...d } = esquemaEmpresa.parse(formParaObjeto(fd));
-    await salvarEmpresa(db, await contextoAtual(), d, { lucroMaoDeObra: Number(lucroMaoDeObra), lucroMaterial: Number(lucroMaterial), impostos: Number(impostos), formula });
+    const { bdiMaoDeObra, bdiMaterial, impostos, formaImposto, adicionalHorario, adicionalLocal, minimoMaoDeObra, arredondamento, ...d } = esquemaEmpresa.parse(formParaObjeto(fd));
+    await salvarEmpresa(db, await contextoAtual(), d, { bdiMaoDeObra, bdiMaterial, impostos, formaImposto, adicionalHorario, adicionalLocal, minimoMaoDeObra, arredondamento });
     revalidatePath("/", "layout");
     return { ok: true, mensagem: "Dados da empresa salvos. Os novos parâmetros valem para orçamentos criados a partir de agora." };
   });

@@ -15,6 +15,20 @@
       "when": 1793737377433,
       "tag": "0001_quadro_atividades",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793740116551,
+      "tag": "0002_orcamento_itens",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793740210299,
+      "tag": "0003_precisao_itens",
+      "breakpoints": true
     }
   ]
 }

@@ -126,11 +126,22 @@ export const esquemaEmpresa = z.object({
   conta: textoOpcional(30),
   pix: textoOpcional(200),
   corPrimaria: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida"),
-  lucroMaoDeObra: percentualDigitado("Lucro de mão de obra", { obrigatorio: true, max: 1000 }),
-  lucroMaterial: percentualDigitado("Lucro de material", { obrigatorio: true, max: 1000 }),
-  impostos: percentualDigitado("Impostos", { obrigatorio: true, max: 99 }),
-  formula: z.enum(["POR_DENTRO", "PLANILHA_LEGADA"]),
-});
+}).and(esquemaParametrosOrcamento());
+
+/** Parâmetros de orçamento digitados em % (usados na empresa e em cada orçamento). */
+export function esquemaParametrosOrcamento() {
+  const pct = (r: string, max = 1000) => percentualDigitado(r, { obrigatorio: true, max }).transform((v) => Number(v));
+  return z.object({
+    bdiMaoDeObra: pct("BDI de mão de obra"),
+    bdiMaterial: pct("BDI de material"),
+    impostos: pct("Impostos", 59),
+    formaImposto: z.enum(["POR_DENTRO", "POR_FORA"]).default("POR_DENTRO"),
+    adicionalHorario: percentualDigitado("Adicional de horário", { max: 1000 }).transform((v) => Number(v ?? 0)),
+    adicionalLocal: percentualDigitado("Adicional de local", { max: 1000 }).transform((v) => Number(v ?? 0)),
+    minimoMaoDeObra: dinheiro("Valor mínimo de MO").transform((v) => Number(v)),
+    arredondamento: z.enum(["CENTAVOS", "REAL_ACIMA"]).default("CENTAVOS"),
+  });
+}
 
 /** Converte FormData em objeto simples (checkbox ausente = campo ausente). */
 export function formParaObjeto(fd: FormData): Record<string, unknown> {

@@ -6,6 +6,7 @@ Sistema web de gestão de obras, orçamento, planejamento e financeiro da **Masi
 - Entrega da Fase 2 (o que está pronto, limitações, testes): [`docs/02-fase2-entrega.md`](docs/02-fase2-entrega.md)
 - Diagnóstico das planilhas Financeiro, NF, Orçamento Padrão e Planejamento: [`docs/03-diagnostico-complementar.md`](docs/03-diagnostico-complementar.md)
 - Identidade visual e Quadro de atividades: [`docs/04-entrega-identidade-e-quadro.md`](docs/04-entrega-identidade-e-quadro.md)
+- Orçamentos (Fase 3, parte 1): [`docs/05-entrega-orcamentos.md`](docs/05-entrega-orcamentos.md)
 
 ## Stack
 
@@ -35,6 +36,7 @@ npm test                    # unitários (cálculos) + integração (usa TEST_DA
 npm run typecheck
 node tests/e2e/fluxo-fase2.cjs   # ponta a ponta no navegador (ver cabeçalho do arquivo)
 node tests/e2e/quadro.cjs        # Quadro de atividades (rodar depois do anterior)
+FIXTURE=tests/fixtures/orcamento-padrao-preenchido.xlsx node tests/e2e/orcamento.cjs   # Orçamentos
 ```
 
 ## Produção
