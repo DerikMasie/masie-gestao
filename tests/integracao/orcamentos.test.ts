@@ -90,7 +90,7 @@ describe("orçamento", () => {
     const c = await carregarOrcamento(db, base.empresaId, r.orcamentoId);
     expect(c.parametros).toMatchObject({ bdiMaoDeObra: 0.3, bdiMaterial: 0.1, impostos: 0.105, minimoMaoDeObra: 100, formaImposto: "POR_FORA", arredondamento: "REAL_ACIMA" });
     expect(c.itens.some((i) => i.grupo && i.codigo.split(".").length === 3)).toBe(true);
-    expect(c.porEtapa.find((p) => p.etapa.nome === "Serviços iniciais")!.itens.length).toBeGreaterThan(0);
+    expect(c.porEtapa.find((p) => p.etapa.nome === "Serviços preliminares")!.itens.length).toBeGreaterThan(0);
 
     // Ao trocar para o padrão do sistema (imposto por dentro, centavos), o total sobe pela correção do imposto.
     await salvarParametros(db, base.ctx, r.orcamentoId, { titulo: "x", observacoes: null, parametros: { ...c.parametros, formaImposto: "POR_DENTRO", arredondamento: "CENTAVOS" } });

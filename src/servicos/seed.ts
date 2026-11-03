@@ -1,6 +1,8 @@
 import { eq, sql } from "drizzle-orm";
 import type { BancoDados } from "@/db";
-import { empresa, etapaPadrao, perfil, quadro, quadroColuna, etiqueta, usuario } from "@/db/schema";
+import { centroCusto, contaFinanceira, empresa, etapaPadrao, obraEtapa, perfil, quadro, quadroColuna, etiqueta, usuario } from "@/db/schema";
+import { EAP_UNICA } from "@/dominio/eap";
+import { garantirPlanoPadrao } from "./financeiro";
 import { COLUNAS_PADRAO, ETIQUETAS_PADRAO } from "@/dominio/quadro";
 import type { Modulo } from "@/dominio/permissoes";
 import { ETAPAS_PADRAO } from "@/dominio/obra";
@@ -61,6 +63,20 @@ export async function semear(banco: BancoDados, admin: { email: string; senha: s
 
     const [{ n }] = (await tx.select({ n: sql<number>`count(*)::int` }).from(etapaPadrao).where(eq(etapaPadrao.empresaId, empresaId))) as [{ n: number }];
     if (n === 0) await tx.insert(etapaPadrao).values(ETAPAS_PADRAO.map((e, i) => ({ ...e, ordem: i + 1, empresaId })));
+
+    // EAP única (D11): renomeia etapas com nomes antigos (padrão da empresa e obras existentes).
+    for (const e of EAP_UNICA) {
+      for (const antigo of e.antigos) {
+        await tx.update(etapaPadrao).set({ nome: e.nome }).where(sql`${etapaPadrao.empresaId} = ${empresaId} and ${etapaPadrao.nome} = ${antigo}`);
+        await tx.update(obraEtapa).set({ nome: e.nome }).where(sql`${obraEtapa.nome} = ${antigo} and ${obraEtapa.obraId} in (select id from obra where empresa_id = ${empresaId})`);
+      }
+    }
+
+    // Financeiro (Fase 3): plano de contas padrão, conta "Caixa" e centro de custo administrativo.
+    await garantirPlanoPadrao(tx, empresaId);
+    const [algumaConta] = await tx.select({ id: contaFinanceira.id }).from(contaFinanceira).where(eq(contaFinanceira.empresaId, empresaId)).limit(1);
+    if (!algumaConta) await tx.insert(contaFinanceira).values({ empresaId, nome: "Caixa", tipo: "CAIXA" });
+    await tx.insert(centroCusto).values({ empresaId, codigo: "ADM", nome: "Administração do escritório", tipo: "ADMINISTRATIVO" }).onConflictDoNothing();
 
     let criado = false;
     const [jaExiste] = await tx.select({ id: usuario.id }).from(usuario).where(sql`lower(${usuario.email}) = ${admin.email.toLowerCase()}`);

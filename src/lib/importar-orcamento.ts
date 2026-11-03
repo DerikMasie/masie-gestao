@@ -160,22 +160,4 @@ export async function lerOrcamentoPadrao(arquivo: Buffer | ArrayBuffer): Promise
   return { parametros, etapas, totalVendaPlanilha, totalPropostaPlanilha, avisos };
 }
 
-const normalizar = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-
-/** Nomes do Orçamento Padrão → nomes da EAP padrão do sistema (de-para do diagnóstico, ponto O-9). */
-const SINONIMOS: Record<string, string> = {
-  "servicos preliminares": "servicos iniciais",
-  "reforco estrutura": "estrutura",
-  "reforco estrutural": "estrutura",
-  "cobertura funilaria": "cobertura",
-  "instalacoes eletricas logicas": "instalacoes eletricas",
-  "instalacao de ar condicionado": "instalacao de ar condicionado",
-  "instalacoes de ar condicionado": "instalacao de ar condicionado",
-  "alugueis de equipamentos": "aluguel de equipamentos",
-  "instalacoes hidraulicas gas": "instalacoes hidraulicas gas",
-};
-
-export function chaveEtapa(nome: string): string {
-  const n = normalizar(nome);
-  return SINONIMOS[n] ?? n;
-}
+export { chaveEtapa } from "@/dominio/eap";

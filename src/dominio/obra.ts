@@ -76,16 +76,8 @@ export function margemPrevista(valorContrato: number, custoOrcado: number): numb
   return (valorContrato - custoOrcado) / valorContrato;
 }
 
-/** As 19 etapas padrão identificadas na planilha AO (seção 1.2, R1). */
-export type TipoEtapa = "CONTRATO" | "ADITIVO" | "FATURAMENTO_DIRETO";
+export type { TipoEtapa } from "./eap";
+import { EAP_UNICA } from "./eap";
 
-export const ETAPAS_PADRAO: { nome: string; tipo: TipoEtapa }[] = [
-  ...[
-    "Serviços iniciais", "Proteções", "Remoções e demolições", "Estrutura", "Cobertura",
-    "Alvenaria / reboco / contrapiso", "Impermeabilização", "Instalações hidráulicas/gás",
-    "Instalações elétricas", "Instalação de ar-condicionado", "Esquadrias", "Gesso", "Revestimentos",
-    "Pintura", "Serviços finais", "Aluguel de equipamentos", "Serviços adicionais",
-  ].map((nome) => ({ nome, tipo: "CONTRATO" as const })),
-  { nome: "Aditivos", tipo: "ADITIVO" },
-  { nome: "Faturamento direto", tipo: "FATURAMENTO_DIRETO" },
-];
+/** Etapas padrão (EAP única, decisão D11). */
+export const ETAPAS_PADRAO = EAP_UNICA.map(({ nome, tipo }) => ({ nome, tipo }));

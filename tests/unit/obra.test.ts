@@ -40,6 +40,7 @@ describe("margem e etapas", () => {
   it("19 etapas padrão, com aditivos e faturamento direto separados", () => {
     expect(ETAPAS_PADRAO).toHaveLength(19);
     expect(ETAPAS_PADRAO[17]).toEqual({ nome: "Aditivos", tipo: "ADITIVO" });
+    expect(ETAPAS_PADRAO[0]!.nome).toBe("Serviços preliminares");
     expect(ETAPAS_PADRAO[18]!.tipo).toBe("FATURAMENTO_DIRETO");
   });
 });

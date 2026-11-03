@@ -29,6 +29,13 @@
       "when": 1793740210299,
       "tag": "0003_precisao_itens",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793741981006,
+      "tag": "0004_financeiro",
+      "breakpoints": true
     }
   ]
 }

@@ -53,14 +53,14 @@ describe("cadastro de obra gera a estrutura operacional", () => {
   });
 
   it("usa apenas etapas padrão ativas", async () => {
-    await db.update(etapaPadrao).set({ ativo: false }).where(and(eq(etapaPadrao.empresaId, base.empresaId), eq(etapaPadrao.nome, "Cobertura")));
+    await db.update(etapaPadrao).set({ ativo: false }).where(and(eq(etapaPadrao.empresaId, base.empresaId), eq(etapaPadrao.nome, "Cobertura/funilaria")));
     const { resumo } = await criarObra(db, base.ctx, dadosObra());
     expect(resumo.etapas).toBe(18);
   });
 
   it("rejeita cliente de outra empresa / inexistente sem gravar nada", async () => {
     await expect(criarObra(db, base.ctx, dadosObra({ clienteId: "8d6c1f9e-0c7e-4e7c-9b62-2b8a3f0a1a11" }))).rejects.toThrow("Cliente não encontrado");
-    expect(await db.select().from(centroCusto)).toHaveLength(0);
+    expect((await db.select().from(centroCusto)).filter((c) => c.tipo === "OBRA")).toHaveLength(0);
   });
 });
 

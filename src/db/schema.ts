@@ -200,7 +200,7 @@ export const obra = pgTable("obra", {
   excluidoEm: timestamp({ withTimezone: true }),
 }, (t) => [uniqueIndex("obra_codigo_uq").on(t.empresaId, t.codigo)]);
 
-export const tipoCentroCusto = pgEnum("tipo_centro_custo", ["OBRA", "ADMINISTRATIVO"]);
+export const tipoCentroCusto = pgEnum("tipo_centro_custo", ["OBRA", "ADMINISTRATIVO", "PROJETO", "CONSULTORIA"]);
 
 export const centroCusto = pgTable("centro_custo", {
   id: id(),
@@ -209,6 +209,11 @@ export const centroCusto = pgTable("centro_custo", {
   nome: text().notNull(),
   tipo: tipoCentroCusto().notNull(),
   obraId: uuid().references(() => obra.id),
+  /** Para centros sem obra (projetos, consultorias, contratos históricos importados). */
+  valorContrato: dinheiro(),
+  valorAditivos: dinheiro(),
+  /** Rótulo original na planilha (ex.: "2024-0003 - Reforma X"), usado na importação. */
+  rotuloOrigem: text(),
   ativo: boolean().notNull().default(true),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
@@ -395,3 +400,152 @@ export const cartaoComentario = pgTable("cartao_comentario", {
   texto: text().notNull(),
   criadoEm: criadoEm(),
 }, (t) => [index("cartao_comentario_idx").on(t.cartaoId, t.criadoEm)]);
+
+
+// ───────────────────────────── Financeiro (Fase 3) ─────────────────────────────
+
+/**
+ * Natureza do grupo de contas. Só RECEITA, CUSTO, DESPESA e IMPOSTO entram no resultado operacional;
+ * RETIRADA aparece abaixo do resultado; FINANCIAMENTO, INVESTIMENTO, TRANSFERENCIA e AJUSTE só afetam o caixa (decisão D12).
+ */
+export const naturezaConta = pgEnum("natureza_conta", [
+  "RECEITA", "CUSTO", "DESPESA", "IMPOSTO", "RETIRADA", "FINANCIAMENTO", "INVESTIMENTO", "TRANSFERENCIA", "AJUSTE",
+]);
+
+/** Plano de contas em 2 níveis (grupo › subitem), como a aba Aux.Listas do Financeiro. Cada linha é um subitem. */
+export const planoConta = pgTable("plano_conta", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  grupo: text().notNull(),
+  natureza: naturezaConta().notNull(),
+  subitem: text().notNull(),
+  /** De-para com a etapa padrão da EAP (decisão D11): permite controlar a verba por etapa. */
+  etapaPadraoId: uuid().references(() => etapaPadrao.id),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("plano_conta_uq").on(t.empresaId, sql`lower(${t.grupo})`, sql`lower(${t.subitem})`)]);
+
+export const tipoContaFinanceira = pgEnum("tipo_conta_financeira", ["BANCO", "CAIXA", "CARTAO", "APLICACAO"]);
+
+export const contaFinanceira = pgTable("conta_financeira", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  nome: text().notNull(),
+  tipo: tipoContaFinanceira().notNull().default("BANCO"),
+  banco: text(),
+  agencia: text(),
+  conta: text(),
+  /** Conta pessoal de sócio usada pela empresa (ponto F-11 do diagnóstico). */
+  contaDeSocio: boolean().notNull().default(false),
+  saldoInicial: dinheiro().notNull().default("0"),
+  ativo: boolean().notNull().default(true),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("conta_financeira_nome_uq").on(t.empresaId, sql`lower(${t.nome})`)]);
+
+export const importacao = pgTable("importacao", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  tipo: text().notNull(),
+  arquivo: text().notNull(),
+  sha256: text().notNull(),
+  resumo: jsonb().notNull(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  desfeitaEm: timestamp({ withTimezone: true }),
+}, (t) => [uniqueIndex("importacao_arquivo_uq").on(t.empresaId, t.sha256).where(sql`${t.desfeitaEm} is null`)]);
+
+export const tipoNotaFiscal = pgEnum("tipo_nota_fiscal", ["A_VISTA", "A_PRAZO", "ACUMULADA", "DEVOLUCAO"]);
+export const statusNotaFiscal = pgEnum("status_nota_fiscal", ["LANCADA", "CANCELADA"]);
+
+/** Nota fiscal de entrada (compras). Gera o título a pagar com as parcelas; devolução abate a verba. */
+export const notaFiscal = pgTable("nota_fiscal", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  fornecedorId: uuid().notNull().references(() => fornecedor.id),
+  numero: text().notNull(),
+  serie: text().notNull().default("1"),
+  chaveNfe: text(),
+  emissao: date({ mode: "string" }).notNull(),
+  tipo: tipoNotaFiscal().notNull(),
+  /** Sempre positivo; o tipo DEVOLUCAO indica crédito. */
+  valorTotal: dinheiro().notNull(),
+  centroCustoId: uuid().notNull().references(() => centroCusto.id),
+  obraEtapaId: uuid().references(() => obraEtapa.id),
+  planoContaId: uuid().notNull().references(() => planoConta.id),
+  /** Material faturado em nome do cliente: abate o saldo do cliente, não é custo da Masie (R11). */
+  faturadoAoCliente: boolean().notNull().default(false),
+  descricao: text(),
+  status: statusNotaFiscal().notNull().default("LANCADA"),
+  xml: text(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [
+  uniqueIndex("nota_fiscal_numero_uq").on(t.empresaId, t.fornecedorId, t.numero, t.serie).where(sql`${t.status} = 'LANCADA'`),
+  uniqueIndex("nota_fiscal_chave_uq").on(t.empresaId, t.chaveNfe).where(sql`${t.chaveNfe} is not null and ${t.status} = 'LANCADA'`),
+  index("nota_fiscal_cc_idx").on(t.centroCustoId, t.emissao),
+]);
+
+export const tipoTitulo = pgEnum("tipo_titulo", ["PAGAR", "RECEBER"]);
+
+/** Conta a pagar ou a receber, com parcelas. */
+export const titulo = pgTable("titulo", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  tipo: tipoTitulo().notNull(),
+  fornecedorId: uuid().references(() => fornecedor.id),
+  clienteId: uuid().references(() => cliente.id),
+  centroCustoId: uuid().notNull().references(() => centroCusto.id),
+  planoContaId: uuid().notNull().references(() => planoConta.id),
+  obraEtapaId: uuid().references(() => obraEtapa.id),
+  notaFiscalId: uuid().references(() => notaFiscal.id, { onDelete: "cascade" }),
+  descricao: text().notNull(),
+  documento: text(),
+  emissao: date({ mode: "string" }).notNull(),
+  valorTotal: dinheiro().notNull(),
+  cancelado: boolean().notNull().default(false),
+  importacaoId: uuid().references(() => importacao.id, { onDelete: "cascade" }),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [index("titulo_cc_idx").on(t.centroCustoId)]);
+
+export const tituloParcela = pgTable("titulo_parcela", {
+  id: id(),
+  tituloId: uuid().notNull().references(() => titulo.id, { onDelete: "cascade" }),
+  numero: integer().notNull(),
+  vencimento: date({ mode: "string" }).notNull(),
+  valor: dinheiro().notNull(),
+  /** Boleto já programado no banco (aba Contas a Pagar: "Boleto já programado para pagamento?"). */
+  programado: boolean().notNull().default(false),
+  pagoEm: date({ mode: "string" }),
+  criadoEm: criadoEm(),
+}, (t) => [index("titulo_parcela_venc_idx").on(t.vencimento), uniqueIndex("titulo_parcela_num_uq").on(t.tituloId, t.numero)]);
+
+/** Razão de caixa: cada entrada (+) ou saída (−) efetiva numa conta financeira. */
+export const lancamento = pgTable("lancamento", {
+  id: id(),
+  empresaId: uuid().notNull().references(() => empresa.id),
+  data: date({ mode: "string" }).notNull(),
+  contaId: uuid().notNull().references(() => contaFinanceira.id),
+  centroCustoId: uuid().notNull().references(() => centroCusto.id),
+  planoContaId: uuid().notNull().references(() => planoConta.id),
+  /** Etapa da obra (verba). Vem do título/NF ou do de-para do plano de contas. */
+  obraEtapaId: uuid().references(() => obraEtapa.id),
+  /** Positivo = entrada; negativo = saída. */
+  valor: dinheiro().notNull(),
+  descricao: text(),
+  observacao: text(),
+  parcelaId: uuid().references(() => tituloParcela.id, { onDelete: "set null" }),
+  notaFiscalId: uuid().references(() => notaFiscal.id, { onDelete: "set null" }),
+  importacaoId: uuid().references(() => importacao.id, { onDelete: "cascade" }),
+  conciliado: boolean().notNull().default(false),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+}, (t) => [
+  index("lancamento_data_idx").on(t.empresaId, t.data),
+  index("lancamento_cc_idx").on(t.centroCustoId, t.data),
+  index("lancamento_conta_idx").on(t.contaId),
+]);
