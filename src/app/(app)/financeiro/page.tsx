@@ -38,10 +38,10 @@ export default async function PainelFinanceiro() {
           detalhe={r.margem == null ? "Sem receitas no ano" : `Margem ${formatarPercentual(r.margem)} · mês: ${formatarMoeda(p.resultadoMes.resultadoOperacional)}`} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-5">
-        <Cartao titulo="Fluxo de caixa mensal (operacional)" className="lg:col-span-3" semPadding>
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <Cartao titulo="Fluxo de caixa mensal (operacional)" className="lg:col-span-2" semPadding>
           <Tabela>
-            <thead><tr><th>Mês</th><th className="w-28">Entradas × saídas</th><th className="text-right">Entradas</th><th className="text-right">Saídas</th><th className="text-right">Líquido</th></tr></thead>
+            <thead><tr><th>Mês</th><th className="w-2/5">Entradas × saídas</th><th className="text-right">Entradas</th><th className="text-right">Saídas</th><th className="text-right">Líquido</th></tr></thead>
             <tbody>
               {p.meses.map((m) => {
                 const futuro = m.projetadoEntradas + m.projetadoSaidas > 0 && m.entradas + m.saidas === 0;
@@ -50,7 +50,7 @@ export default async function PainelFinanceiro() {
                   <tr key={m.mes}>
                     <td className="whitespace-nowrap">{nomeDoMes(m.mes).replace(" de ", "/").replace(/^./, (l) => l.toUpperCase())}{futuro && <span className="ml-1 text-xs text-suave">(previsto)</span>}</td>
                     <td>
-                      <div className="w-24 space-y-0.5" title={`Entradas ${formatarMoeda(e)} · saídas ${formatarMoeda(s)}`}>
+                      <div className="space-y-0.5" title={`Entradas ${formatarMoeda(e)} · saídas ${formatarMoeda(s)}`}>
                         <div className="h-2 rounded-r bg-zinc-800" style={{ width: `${(e / maior) * 100}%`, opacity: futuro ? 0.5 : 1 }} />
                         <div className="h-2 rounded-r bg-destaque" style={{ width: `${(s / maior) * 100}%`, opacity: futuro ? 0.5 : 1 }} />
                       </div>
@@ -66,7 +66,7 @@ export default async function PainelFinanceiro() {
           <p className="border-t border-borda px-5 py-3 text-xs text-suave">Barra escura: entradas; amarela: saídas. Meses futuros usam as parcelas em aberto (previsto). Empréstimos, aplicações, transferências e saldo inicial ficam fora (decisão D12).</p>
         </Cartao>
 
-        <div className="space-y-6 lg:col-span-2">
+        <>
           <Cartao titulo={`Resultado ${ano}`} semPadding>
             <Tabela>
               <tbody>
@@ -94,7 +94,7 @@ export default async function PainelFinanceiro() {
             </Tabela>
             <p className="border-t border-borda px-5 py-3 text-xs text-suave">Saldo = saldo inicial + lançamentos. Confira com os extratos e ajuste o saldo inicial em Configurações → Contas.</p>
           </Cartao>
-        </div>
+        </>
       </div>
     </>
   );

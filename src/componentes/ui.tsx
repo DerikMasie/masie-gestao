@@ -63,9 +63,9 @@ export function Selo({ tom = "cinza", children }: { tom?: Tom; children: ReactNo
 
 export function Indicador({ rotulo, valor, detalhe, tom }: { rotulo: string; valor: ReactNode; detalhe?: ReactNode; tom?: "perigo" | "alerta" | "sucesso" }) {
   return (
-    <div className="min-w-0 rounded-xl border border-borda bg-superficie p-4 shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-borda bg-superficie p-4 shadow-sm">
       <div className="text-xs font-medium uppercase tracking-wide text-suave">{rotulo}</div>
-      <div className={clsx("tabular mt-1 text-lg font-semibold [overflow-wrap:normal] sm:text-2xl", tom === "perigo" && "text-perigo", tom === "alerta" && "text-alerta", tom === "sucesso" && "text-sucesso")}>{valor}</div>
+      <div className={clsx("tabular mt-1 whitespace-nowrap text-lg font-semibold sm:text-xl 2xl:text-2xl", tom === "perigo" && "text-perigo", tom === "alerta" && "text-alerta", tom === "sucesso" && "text-sucesso")}>{valor}</div>
       {detalhe && <div className="mt-1 text-xs text-suave">{detalhe}</div>}
     </div>
   );

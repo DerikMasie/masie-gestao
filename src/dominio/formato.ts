@@ -2,7 +2,8 @@ const moeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL
 const moedaCompacta = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", notation: "compact", maximumFractionDigits: 1 });
 const pct = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
-export const formatarMoeda = (v: number | string | null | undefined) => (v == null || v === "" ? "—" : moeda.format(Number(v)));
+/** Moeda em pt-BR. O sinal negativo usa o caractere de menos (U+2212) colado ao valor, para não quebrar linha no "-". */
+export const formatarMoeda = (v: number | string | null | undefined) => (v == null || v === "" ? "—" : moeda.format(Number(v)).replace(/^-\s?/, "\u2212").replace(/\s/g, "\u00a0"));
 export const formatarMoedaCompacta = (v: number) => moedaCompacta.format(v);
 export const formatarPercentual = (v: number | string | null | undefined) => (v == null || v === "" ? "—" : pct.format(Number(v)));
 
