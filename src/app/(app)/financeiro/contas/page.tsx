@@ -8,7 +8,7 @@ import { listarParcelas, type FiltroParcelas } from "@/servicos/financeiro";
 import { opcoesFinanceiras } from "@/servicos/opcoes-financeiras";
 import { BotaoEnviar, Campo, CampoSelecao, CampoSelecaoAgrupada, Formulario } from "@/componentes/formulario";
 import { BotaoProgramar } from "@/componentes/botao-programar";
-import { Abas, CabecalhoPagina, Cartao, Selo, Tabela, Vazio } from "@/componentes/ui";
+import { Abas, Aviso, CabecalhoPagina, Cartao, Selo, Tabela, Vazio } from "@/componentes/ui";
 import { baixarParcelaAcao, criarTituloAcao, programarParcelaAcao } from "../acoes";
 
 export const metadata = { title: "Contas a pagar e receber" };
@@ -30,6 +30,7 @@ export default async function Contas({ searchParams }: { searchParams: Promise<R
   return (
     <>
       <CabecalhoPagina titulo="Contas a pagar e a receber" subtitulo="Parcelas por vencimento; a baixa registra o lançamento no caixa" voltar={{ href: "/financeiro", rotulo: "Financeiro" }} />
+      {p.baixa && <div className="mb-4"><Aviso tom="sucesso">Baixa registrada: o lançamento foi criado no caixa e a parcela saiu da lista em aberto.</Aviso></div>}
       <Abas abas={[{ id: "pagar", rotulo: "A pagar" }, { id: "receber", rotulo: "A receber" }]} ativa={pagar ? "pagar" : "receber"} base="/financeiro/contas" />
       <div className="grid gap-6 xl:grid-cols-4">
         <Cartao semPadding className="xl:col-span-3">
@@ -64,6 +65,7 @@ export default async function Contas({ searchParams }: { searchParams: Promise<R
                             <details className="group">
                               <summary className="cursor-pointer list-none text-sm font-medium underline decoration-destaque decoration-2 underline-offset-4">{pagar ? "Pagar" : "Receber"}</summary>
                               <Formulario acao={baixarParcelaAcao.bind(null, l.id)} className="mt-2 !space-y-2 rounded-lg border border-borda bg-white p-2">
+                                <input type="hidden" name="aba" value={pagar ? "pagar" : "receber"} />
                                 <div className="grid grid-cols-2 gap-2">
                                   <Campo nome="data" rotulo="Data" type="date" defaultValue={hojeIso()} />
                                   <Campo nome="valor" rotulo="Valor" inputMode="decimal" placeholder={Number(l.valor).toFixed(2).replace(".", ",")} />

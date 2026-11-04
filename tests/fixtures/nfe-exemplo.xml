@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><NFe><infNFe Id="NFe41261198765432000110550010000045671000045678" versao="4.00">
+<ide><nNF>4567</nNF><serie>1</serie><dhEmi>2026-11-03T09:00:00-03:00</dhEmi></ide>
+<emit><CNPJ>98765432000110</CNPJ><xNome>ELETRO MATERIAIS LTDA</xNome><xFant>Eletro Materiais</xFant></emit>
+<dest><CNPJ>27527577000102</CNPJ><xNome>MASIE ENGENHARIA</xNome></dest>
+<det nItem="1"><prod><xProd>CABO FLEXIVEL 2,5MM</xProd><qCom>300</qCom><uCom>M</uCom><vProd>1200.00</vProd></prod></det>
+<total><ICMSTot><vNF>1200.00</vNF></ICMSTot></total>
+<cobr><dup><nDup>001</nDup><dVenc>2026-12-03</dVenc><vDup>600.00</vDup></dup><dup><nDup>002</nDup><dVenc>2027-01-02</dVenc><vDup>600.00</vDup></dup></cobr>
+</infNFe></NFe></nfeProc>

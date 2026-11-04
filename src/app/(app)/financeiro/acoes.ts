@@ -71,13 +71,15 @@ export async function criarTituloAcao(_: EstadoForm, fd: FormData): Promise<Esta
 }
 
 export async function baixarParcelaAcao(parcelaId: string, _: EstadoForm, fd: FormData): Promise<EstadoForm> {
-  return tratar(async () => {
+  const r = await tratar(async () => {
     await exigirPermissao("financeiro", "editar");
     const d = z.object({ data: dataIso("Data"), contaId: uuid("a conta"), valor: z.preprocess((v) => lerNumero(String(v ?? "")), z.number().positive().nullable()) }).parse(formParaObjeto(fd));
     await baixarParcela(db, await contextoAtual(), parcelaId, d);
     revalidarFinanceiro();
-    return { ok: true, mensagem: "Baixa registrada no caixa." };
   });
+  // A parcela sai da lista "em aberto"; o aviso fica no topo da página.
+  if (r.ok) redirect(`/financeiro/contas?aba=${fd.get("aba") === "receber" ? "receber" : "pagar"}&baixa=1`);
+  return r;
 }
 
 export async function programarParcelaAcao(parcelaId: string, programado: boolean): Promise<EstadoForm> {
