@@ -6,6 +6,7 @@ import { exigirPermissaoPagina, temPermissao } from "@/lib/auth/atual";
 import { listarObras } from "@/servicos/obras";
 import { indicadoresPainel } from "@/servicos/painel";
 import { minhasTarefas } from "@/servicos/quadros";
+import { painelFinanceiro } from "@/servicos/financeiro";
 import { hojeIso } from "@/dominio/calendario";
 import { situacaoCartao } from "@/dominio/quadro";
 import { GraficoSituacoes } from "@/componentes/graficos";
@@ -21,10 +22,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const p = await searchParams;
   const acesso = { id: u.id, empresaId: u.empresaId, acessoTodasObras: u.perfil.acessoTodasObras };
   const verQuadro = temPermissao(u, "quadro");
-  const [i, todas, tarefas] = await Promise.all([
+  const verFin = temPermissao(u, "financeiro");
+  const [i, todas, tarefas, fin] = await Promise.all([
     indicadoresPainel(db, acesso, { obraId: p.obra || undefined, inicioDe: p.de || undefined, inicioAte: p.ate || undefined }),
     listarObras(db, acesso, { ordem: "codigo", direcao: "desc" }),
     verQuadro ? minhasTarefas(db, u.empresaId, u.id) : Promise.resolve([]),
+    verFin ? painelFinanceiro(db, u.empresaId) : Promise.resolve(null),
   ]);
   const hoje = hojeIso();
 
@@ -125,9 +128,19 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </div>
       </div>
 
-      <p className="mt-6 text-xs text-suave">
-        Indicadores financeiros (faturamento, recebimentos, contas a pagar, fluxo de caixa e lucro) passam a ser exibidos a partir da Fase 3, calculados dos lançamentos reais — não são simulados.
-      </p>
+      {fin && (
+        <>
+          <h2 className="mt-8 mb-3 text-sm font-semibold uppercase tracking-wide text-suave">Financeiro</h2>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <Indicador rotulo="Saldo em contas" valor={formatarMoeda(fin.saldoTotal)} tom={fin.saldoTotal < 0 ? "perigo" : undefined} />
+            <Indicador rotulo="Faturamento do mês" valor={formatarMoeda(fin.resultadoMes.receitas)} detalhe={`No ano: ${formatarMoeda(fin.resultadoAno.receitas)}`} />
+            <Indicador rotulo="Resultado do ano" valor={formatarMoeda(fin.resultadoAno.resultadoOperacional)} tom={fin.resultadoAno.resultadoOperacional < 0 ? "perigo" : "sucesso"} detalhe={fin.resultadoAno.margem == null ? undefined : `Margem ${formatarPercentual(fin.resultadoAno.margem)}`} />
+            <Indicador rotulo="A pagar (30 dias)" valor={formatarMoeda(fin.aPagar.trinta)} detalhe={fin.aPagar.vencido ? `Vencido: ${formatarMoeda(fin.aPagar.vencido)}` : "Nada vencido"} tom={fin.aPagar.vencido ? "perigo" : undefined} />
+            <Indicador rotulo="A receber" valor={formatarMoeda(fin.aReceber.total)} detalhe={fin.aReceber.vencido ? `Vencido: ${formatarMoeda(fin.aReceber.vencido)}` : undefined} tom={fin.aReceber.vencido ? "alerta" : undefined} />
+          </div>
+          <p className="mt-2 text-xs text-suave"><Link href="/financeiro" className="underline decoration-destaque decoration-2 underline-offset-4">Abrir o painel financeiro</Link> · resultado sem empréstimos, aplicações e transferências (D12).</p>
+        </>
+      )}
     </>
   );
 }

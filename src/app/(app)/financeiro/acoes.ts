@@ -222,3 +222,15 @@ export async function fornecedorPorDocumentoAcao(documento: string): Promise<{ i
     .where(and(eq(fornecedor.empresaId, u.empresaId), eq(fornecedor.documento, doc), sql`${fornecedor.excluidoEm} is null`));
   return f ?? null;
 }
+
+/** Saldo da verba da etapa (para o aviso de estouro no formulário de NF). */
+export async function verbaEtapaAcao(centroCustoId: string, obraEtapaId: string) {
+  const u = await exigirPermissao("compras", "ver");
+  const { centroCusto } = await import("@/db/schema");
+  const { verbaDaObra } = await import("@/servicos/financeiro");
+  const [cc] = await db.select().from(centroCusto).where(and(eq(centroCusto.id, centroCustoId), eq(centroCusto.empresaId, u.empresaId)));
+  if (!cc?.obraId) return null;
+  const v = await verbaDaObra(db, u.empresaId, cc.obraId);
+  const l = v.linhas.find((x) => x.etapa.id === obraEtapaId);
+  return l ? { orcado: l.orcado, incorrido: l.incorrido, saldo: l.saldo, temBase: Boolean(v.base) } : null;
+}

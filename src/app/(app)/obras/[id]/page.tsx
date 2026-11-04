@@ -9,6 +9,7 @@ import { listarAnexos } from "@/servicos/anexos";
 import { equipeObra, estruturaObra, obterObra } from "@/servicos/obras";
 import { listarAuditoria } from "@/servicos/painel";
 import { listarUsuariosAtivos } from "@/servicos/usuarios";
+import { listarNotas, resultadoPorCentro, verbaDaObra } from "@/servicos/financeiro";
 import { listarOrcamentosObra, orcamentosParaCopiar, STATUS_ORCAMENTO } from "@/servicos/orcamentos";
 import { importarPlanilhaAcao, novaRevisaoAcao } from "./orcamentos/acoes";
 import { AuditoriaLista } from "@/componentes/auditoria-lista";
@@ -20,6 +21,7 @@ import { anexarAcao, desvincularAcao, excluirObraAcao, removerAnexoAcao, vincula
 const ABAS = [
   { id: "resumo", rotulo: "Resumo" },
   { id: "orcamento", rotulo: "Orçamento" },
+  { id: "financeiro", rotulo: "Financeiro" },
   { id: "estrutura", rotulo: "Estrutura" },
   { id: "equipe", rotulo: "Equipe e acesso" },
   { id: "documentos", rotulo: "Documentos" },
@@ -84,7 +86,7 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
               <li className="flex items-center justify-between gap-2"><span>Cadastro, ficha técnica, equipe, documentos e histórico</span><Selo tom="verde">Disponível</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Centro de custo, EAP e calendário semanal</span><Selo tom="verde">Gerado</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Orçamento (EAP, BDI, curva ABC, revisões, importação do Excel)</span><Selo tom="verde">Disponível</Selo></li>
-              <li className="flex items-center justify-between gap-2"><span>Compras, notas fiscais e financeiro</span><Selo>Fase 3</Selo></li>
+              <li className="flex items-center justify-between gap-2"><span>Notas fiscais, contas a pagar, verba por etapa e resultado</span><Selo tom="verde">Disponível</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Planejamento semanal, medições e aditivos</span><Selo>Fase 4</Selo></li>
               <li className="flex items-center justify-between gap-2"><span>Relatório semanal em PDF e painel gerencial</span><Selo>Fase 5</Selo></li>
             </ul>
@@ -98,6 +100,7 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
       )}
 
       {aba === "orcamento" && <AbaOrcamento obraId={id} empresaId={u.empresaId} podeEditar={temPermissao(u, "orcamentos", "criar")} verOrc={temPermissao(u, "orcamentos")} />}
+      {aba === "financeiro" && <AbaFinanceiro obraId={id} empresaId={u.empresaId} verFin={temPermissao(u, "financeiro") || temPermissao(u, "compras")} />}
       {aba === "estrutura" && <AbaEstrutura obraId={id} />}
       {aba === "equipe" && <AbaEquipe obraId={id} empresaId={u.empresaId} podeEditar={podeEditar} />}
       {aba === "documentos" && <AbaDocumentos obraId={id} empresaId={u.empresaId} podeEditar={podeEditar} />}
@@ -140,6 +143,67 @@ async function AbaOrcamento({ obraId, empresaId, podeEditar, verOrc }: { obraId:
           </Formulario>
         </Cartao>
       )}
+    </div>
+  );
+}
+
+const ALERTA_VERBA = { NAO_PLANEJADO: ["Não planejado", "vermelho"], ESTOURADA: ["Estourada", "vermelho"], ATENCAO: ["≥ 90%", "destaque"] } as const;
+
+async function AbaFinanceiro({ obraId, empresaId, verFin }: { obraId: string; empresaId: string; verFin: boolean }) {
+  if (!verFin) return <Aviso>Seu perfil não tem acesso ao financeiro da obra.</Aviso>;
+  const v = await verbaDaObra(db, empresaId, obraId);
+  const rc = v.centroCustoId ? (await resultadoPorCentro(db, empresaId)).find((c) => c.id === v.centroCustoId) : undefined;
+  const notas = v.centroCustoId ? await listarNotas(db, empresaId, { centroCustoId: v.centroCustoId }) : [];
+  const linhas = v.linhas.filter((l) => l.orcado || l.incorrido || l.aPagar);
+  const tot = linhas.reduce((t, l) => ({ orcado: t.orcado + l.orcado, incorrido: t.incorrido + l.incorrido, pago: t.pago + l.pago, aPagar: t.aPagar + l.aPagar }), { orcado: 0, incorrido: 0, pago: 0, aPagar: 0 });
+  tot.incorrido += v.semEtapa.incorrido; tot.pago += v.semEtapa.pago; tot.aPagar += v.semEtapa.aPagar;
+  return (
+    <div className="space-y-6">
+      {!v.base && <Aviso tom="alerta">A obra ainda não tem <b>orçamento-base</b>. Aprove um orçamento e defina-o como base para controlar a verba por etapa; até lá, todo gasto aparece como “não planejado”.</Aviso>}
+      {rc && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+          <Indicador rotulo="Recebido" valor={formatarMoeda(rc.receitas)} detalhe={rc.contrato ? `A receber do contrato: ${formatarMoeda(rc.aReceberContrato)}` : undefined} />
+          <Indicador rotulo="Custo incorrido" valor={formatarMoeda(tot.incorrido)} detalhe={`Orçado ${formatarMoeda(tot.orcado)}`} tom={tot.orcado && tot.incorrido > tot.orcado ? "perigo" : undefined} />
+          <Indicador rotulo="Pago" valor={formatarMoeda(tot.pago)} detalhe={`A pagar ${formatarMoeda(tot.aPagar)}`} />
+          <Indicador rotulo="Saldo da verba" valor={formatarMoeda(tot.orcado - tot.incorrido)} tom={tot.orcado - tot.incorrido < 0 ? "perigo" : undefined} detalhe={tot.orcado ? `${formatarPercentual(tot.incorrido / tot.orcado)} consumido` : undefined} />
+          <Indicador rotulo="Resultado de caixa" valor={formatarMoeda(rc.resultadoOperacional)} tom={rc.resultadoOperacional < 0 ? "perigo" : undefined} detalhe="Recebido − pago − impostos" />
+        </div>
+      )}
+      <Cartao titulo="Verba por etapa: orçado × incorrido × pago" semPadding>
+        {linhas.length === 0 && !v.semEtapa.incorrido ? <p className="p-5 text-sm text-suave">Sem orçamento-base nem gastos lançados.</p> : (
+          <Tabela>
+            <thead><tr><th>Etapa</th><th className="text-right">Orçado</th><th className="text-right">Incorrido</th><th className="w-40">Consumo</th><th className="text-right">Pago</th><th className="text-right">A pagar</th><th className="text-right">Saldo</th><th /></tr></thead>
+            <tbody>
+              {linhas.map((l) => (
+                <tr key={l.etapa.id}>
+                  <td>{l.etapa.ordem}. {l.etapa.nome}</td>
+                  <td className="tabular text-right">{formatarMoeda(l.orcado)}</td>
+                  <td className="tabular text-right">{formatarMoeda(l.incorrido)}</td>
+                  <td>{l.consumo != null && <BarraPrazo fracao={l.consumo} />}</td>
+                  <td className="tabular text-right text-xs">{formatarMoeda(l.pago)}</td>
+                  <td className="tabular text-right text-xs">{formatarMoeda(l.aPagar)}</td>
+                  <td className={`tabular text-right font-medium ${l.saldo < 0 ? "text-perigo" : ""}`}>{formatarMoeda(l.saldo)}</td>
+                  <td>{l.alerta && <Selo tom={ALERTA_VERBA[l.alerta][1]}>{ALERTA_VERBA[l.alerta][0]}</Selo>}</td>
+                </tr>
+              ))}
+              {v.semEtapa.incorrido !== 0 && <tr><td className="text-suave">Sem etapa definida</td><td /><td className="tabular text-right">{formatarMoeda(v.semEtapa.incorrido)}</td><td /><td className="tabular text-right text-xs">{formatarMoeda(v.semEtapa.pago)}</td><td className="tabular text-right text-xs">{formatarMoeda(v.semEtapa.aPagar)}</td><td /><td /></tr>}
+              <tr className="bg-zinc-50 font-semibold"><td>Total</td><td className="tabular text-right">{formatarMoeda(tot.orcado)}</td><td className="tabular text-right">{formatarMoeda(tot.incorrido)}</td><td /><td className="tabular text-right">{formatarMoeda(tot.pago)}</td><td className="tabular text-right">{formatarMoeda(tot.aPagar)}</td><td className="tabular text-right">{formatarMoeda(tot.orcado - tot.incorrido)}</td><td /></tr>
+            </tbody>
+          </Tabela>
+        )}
+        <p className="border-t border-borda px-5 py-3 text-xs text-suave">Incorrido = notas fiscais lançadas (devoluções abatem; faturamento direto ao cliente não entra) + pagamentos sem nota. Uma nota paga não é contada duas vezes. A barra mostra o % da verba consumida (vermelha acima de 100%).</p>
+      </Cartao>
+      <Cartao titulo={`Notas fiscais da obra · ${notas.length}`} acoes={<Link href="/compras/notas/nova" className="text-xs underline decoration-destaque decoration-2 underline-offset-4">+ Lançar nota</Link>} semPadding>
+        {notas.length === 0 ? <p className="p-5 text-sm text-suave">Nenhuma nota lançada.</p> : (
+          <Tabela>
+            <thead><tr><th>Emissão</th><th>NF</th><th>Fornecedor</th><th>Etapa</th><th className="text-right">Valor</th><th className="text-right">Pago</th></tr></thead>
+            <tbody>{notas.slice(0, 50).map((n) => (
+              <tr key={n.id}><td className="tabular whitespace-nowrap">{formatarData(n.emissao)}</td><td>{n.numero}</td><td>{n.fornecedor}</td><td className="text-xs">{n.etapa ?? "—"}</td>
+                <td className="tabular text-right">{n.tipo === "DEVOLUCAO" ? "− " : ""}{formatarMoeda(n.valorTotal)}{n.faturadoAoCliente && <span className="block text-[11px] text-suave">fat. cliente</span>}</td><td className="tabular text-right text-xs">{formatarMoeda(n.pago)}</td></tr>
+            ))}</tbody>
+          </Tabela>
+        )}
+      </Cartao>
     </div>
   );
 }

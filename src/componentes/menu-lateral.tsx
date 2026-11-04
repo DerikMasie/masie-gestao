@@ -6,10 +6,10 @@ import { useState } from "react";
 import clsx from "clsx";
 import { LogoMasie } from "./logo";
 import {
-  Building2, CalendarDays, ClipboardList, HardHat, KanbanSquare, LayoutDashboard, LogOut, Menu, Settings, ShieldCheck, Truck, UserRound, Users, X,
+  Building2, CalendarClock, CalendarDays, ClipboardList, FileText, HardHat, KanbanSquare, Landmark, LayoutDashboard, ListOrdered, ListTree, LogOut, Menu, PieChart, Receipt, Settings, ShieldCheck, Truck, Upload, UserRound, Users, Wallet, X,
 } from "lucide-react";
 
-const ICONES = { LayoutDashboard, HardHat, Users, Truck, UserRound, ShieldCheck, Building2, ClipboardList, Settings, KanbanSquare, CalendarDays } as const;
+const ICONES = { LayoutDashboard, HardHat, Users, Truck, UserRound, ShieldCheck, Building2, ClipboardList, Settings, KanbanSquare, CalendarDays, Wallet, Receipt, CalendarClock, ListOrdered, PieChart, FileText, Upload, ListTree, Landmark } as const;
 export type IconeMenu = keyof typeof ICONES;
 
 export interface ItemMenu { href: string; rotulo: string; icone: IconeMenu; grupo?: string }
