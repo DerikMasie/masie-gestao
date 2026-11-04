@@ -137,3 +137,19 @@ export function AcaoConfirmada({ acao, confirmacao, children, campos, variante =
     </form>
   );
 }
+
+/** Seleção com grupos (<optgroup>), ex.: plano de contas por grupo. */
+export function CampoSelecaoAgrupada({ nome, rotulo, obrigatorio, grupos, vazio, ajuda, ...p }: ComponentProps<"select"> & {
+  nome: string; rotulo: string; obrigatorio?: boolean; vazio?: string; ajuda?: ReactNode;
+  grupos: { rotulo: string; opcoes: { valor: string; rotulo: string }[] }[];
+}) {
+  const erro = useContext(CtxErros)[nome];
+  return (
+    <Rotulo nome={nome} rotulo={rotulo} obrigatorio={obrigatorio} ajuda={ajuda}>
+      <select id={nome} name={nome} aria-invalid={Boolean(erro)} className={clsx(estiloCampo, erro && "border-perigo")} {...p}>
+        {vazio !== undefined && <option value="">{vazio}</option>}
+        {grupos.map((g) => <optgroup key={g.rotulo} label={g.rotulo}>{g.opcoes.map((o) => <option key={o.valor} value={o.valor}>{o.rotulo}</option>)}</optgroup>)}
+      </select>
+    </Rotulo>
+  );
+}
