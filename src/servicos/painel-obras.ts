@@ -24,8 +24,10 @@ export interface CartaoObra {
 const SITUACOES_ATIVAS: SituacaoObra[] = ["CONTRATADA", "EM_ANDAMENTO", "PARALISADA"];
 
 /** Dados do painel de obras: uma linha por obra ativa visível ao usuário. */
-export async function painelObras(db: Executor, u: { id: string; empresaId: string; acessoTodasObras: boolean }, hoje = hojeIso()): Promise<CartaoObra[]> {
-  const obras = (await listarObras(db, u, { situacao: "ATIVAS", ordem: "codigo", direcao: "asc" })).filter((o) => SITUACOES_ATIVAS.includes(o.situacao));
+export async function painelObras(db: Executor, u: { id: string; empresaId: string; acessoTodasObras: boolean }, hoje = hojeIso(), soObraId?: string): Promise<CartaoObra[]> {
+  const obras = soObraId
+    ? (await listarObras(db, u, {})).filter((o) => o.id === soObraId)
+    : (await listarObras(db, u, { situacao: "ATIVAS", ordem: "codigo", direcao: "asc" })).filter((o) => SITUACOES_ATIVAS.includes(o.situacao));
   if (!obras.length) return [];
   const rels = await db.select().from(relatorioSemanal).where(and(inArray(relatorioSemanal.obraId, obras.map((o) => o.id)), gt(relatorioSemanal.versao, 0)));
   const diaSemana = ((paraData(hoje).getUTCDay() + 6) % 7) + 1; // 1 = segunda … 7 = domingo

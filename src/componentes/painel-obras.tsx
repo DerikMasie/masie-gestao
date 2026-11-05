@@ -280,7 +280,8 @@ export function PainelObras({ cartoes, verValores, hoje }: { cartoes: CartaoObra
                 </div>
               )}
               <div className="flex flex-wrap gap-2 border-t border-borda pt-4">
-                <Link href={`/obras/${sel.id}?aba=fisico`} className="rounded-lg bg-marca px-4 py-2 font-medium text-white">Abrir a obra</Link>
+                <Link href={`/obras/${sel.id}/painel`} className="rounded-lg bg-marca px-4 py-2 font-medium text-white">Painel da obra</Link>
+                <Link href={`/obras/${sel.id}?aba=fisico`} className="rounded-lg border border-borda px-3 py-2 hover:bg-zinc-50">Abrir a obra</Link>
                 <Link href={`/obras/${sel.id}?aba=fisico&vista=semana`} className="rounded-lg border border-borda px-3 py-2 hover:bg-zinc-50">Lançar semana</Link>
                 <Link href={`/obras/${sel.id}?aba=fisico&vista=relatorio`} className="rounded-lg border border-borda px-3 py-2 hover:bg-zinc-50">Relatório</Link>
               </div>

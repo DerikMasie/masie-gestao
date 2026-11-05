@@ -71,6 +71,13 @@
       "when": 1793908884141,
       "tag": "0009_relatorio_cores",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793911042067,
+      "tag": "0010_lembretes",
+      "breakpoints": true
     }
   ]
 }

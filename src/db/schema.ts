@@ -703,3 +703,18 @@ export const relatorioFoto = pgTable("relatorio_foto", {
   focoY: integer().notNull().default(50),
   criadoEm: criadoEm(),
 }, (t) => [index("relatorio_foto_idx").on(t.relatorioId, t.ordem)]);
+
+// ───────────────────────────── Painel da obra: lembretes da semana ─────────────────────────────
+
+/** "Itens importantes para não esquecer na semana": lembretes livres da equipe por obra e semana. Os não feitos seguem para as semanas seguintes. */
+export const lembreteObra = pgTable("lembrete_obra", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  semana: integer().notNull(),
+  texto: text().notNull(),
+  importante: boolean().notNull().default(false),
+  feitoEm: timestamp({ withTimezone: true }),
+  feitoPor: uuid().references(() => usuario.id),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+}, (t) => [index("lembrete_obra_idx").on(t.obraId, t.semana)]);

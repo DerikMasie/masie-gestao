@@ -60,7 +60,7 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
         voltar={{ href: "/obras", rotulo: "Obras" }}
         titulo={<span className="flex items-center gap-3">{o.codigo} <SeloSituacao situacao={o.situacao} /></span>}
         subtitulo={`${o.nome} · ${dados.clienteNome}`}
-        acoes={podeEditar && <LinkBotao href={`${base}/editar`} variante="secundario">Editar</LinkBotao>}
+        acoes={<><LinkBotao href={`${base}/painel`}>Painel da obra</LinkBotao>{podeEditar && <LinkBotao href={`${base}/editar`} variante="secundario">Editar</LinkBotao>}</>}
       />
       {sp.criada && <div className="mb-4"><Aviso tom="sucesso">Obra cadastrada. A estrutura operacional foi gerada — veja a aba <Link className="underline" href={`${base}?aba=estrutura`}>Estrutura</Link>.</Aviso></div>}
       {sp.salva && <div className="mb-4"><Aviso tom="sucesso">Alterações salvas e registradas no histórico.</Aviso></div>}

@@ -113,7 +113,7 @@ export function PainelEngenheiros({ resumo, grupos, ritmos, linkObras = true }: 
                     <span className="tabular w-11 shrink-0 text-right text-[11px]" style={{ color: cor }}>{r?.realizado != null ? `${Math.round(r.realizado * 100)}%` : ""}</span>
                   </>
                 );
-                return <li key={o.id}>{linkObras ? <Link href={`/obras/${o.id}?aba=fisico`} className="flex items-center gap-2 rounded hover:bg-zinc-800/60">{conteudo}</Link> : <div className="flex items-center gap-2">{conteudo}</div>}</li>;
+                return <li key={o.id}>{linkObras ? <Link href={`/obras/${o.id}/painel`} className="flex items-center gap-2 rounded hover:bg-zinc-800/60">{conteudo}</Link> : <div className="flex items-center gap-2">{conteudo}</div>}</li>;
               })}
               {g.obras.length > 8 && <li className="text-[11px] text-zinc-400">+ {g.obras.length - 8} obra(s)</li>}
             </ul>

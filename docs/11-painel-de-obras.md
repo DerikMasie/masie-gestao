@@ -104,3 +104,61 @@ Receita = valor de contrato.
 - regras: `src/dominio/painel-engenheiros.ts`;
 - dados: `src/servicos/painel-engenheiros.ts`;
 - tela: `src/componentes/painel-engenheiros.tsx`.
+
+## Painel da obra (dashboard por obra) — 06/11/2026
+
+Pedido do cliente: um "cartão da obra" no estilo de dashboard de BI, com indicadores, atividades executadas, saldos, medições, atividades da semana e itens que não podem ser esquecidos na semana.
+
+**Onde fica:** `/obras/{id}/painel`. Dá para chegar por três caminhos:
+- o botão **Painel da obra** no topo de cada obra;
+- o detalhe lateral do painel inicial;
+- a lista de obras da visão por engenheiro.
+
+**Filtro de semana:** escolher uma semana passada mostra o estado daquela semana, calculado na sexta-feira dela.
+
+### Indicadores
+
+São blocos coloridos em degradê, cada um com um mini gráfico de área:
+
+| Indicador | O que mostra | Mini gráfico |
+|---|---|---|
+| Avanço físico | Previsto, diferença em pontos e avanço na semana | Evolução semanal |
+| Executado (cobrança) | Maior medição | Acumulado por medição |
+| Saldo a medir | Contrato − entrada ± ajustes − executado | Saldo por medição |
+| Fornecedores a pagar | Executado e não pago; pago na semana | Pagamentos por semana |
+
+### Blocos
+
+**Atividades da semana:** os serviços previstos na semana e os atrasados. Cada um mostra:
+- uma situação, entre as quatro abaixo:
+  - **concluída:** 100% executado;
+  - **atrasada:** executado abaixo do previsto até a semana anterior;
+  - **em andamento:** teve avanço lançado na semana;
+  - **não iniciada:** nada lançado na semana;
+- a barra do acumulado × previsto;
+- o realizado e o previsto da semana.
+
+Abaixo da tabela vem a prévia da próxima semana.
+
+**Não esquecer nesta semana:**
+- as pendências automáticas da obra;
+- os lembretes da equipe, com marcação de importante e de feito, que podem ser incluídos e excluídos;
+- os lembretes não feitos passam para as semanas seguintes, com a marca "da semana N".
+
+**Permissão para editar lembretes:** Planejamento → editar.
+
+**Executado na semana:** atividades com avanço lançado, ordenadas pela contribuição ao avanço da obra (peso pela duração).
+
+**Medições:** gráfico previsto × realizado e a situação de cada medição (paga, não paga, a fechar, em andamento).
+
+**Saldos:**
+- rosca com a composição do contrato: quitado, executado a cobrar e a executar;
+- saldo do cliente a pagar;
+- fornecedores, com o valor a pagar.
+
+**Valores:** os indicadores e blocos com dinheiro só aparecem para perfis com acesso a Medições e Orçamentos.
+
+**Testes:**
+- unitários: situação das atividades e regra de passagem dos lembretes;
+- integração: dados da obra Palco na semana 2 e ciclo completo dos lembretes;
+- ponta a ponta: `tests/e2e/painel-obra.cjs`.
