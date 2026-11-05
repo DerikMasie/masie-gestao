@@ -162,3 +162,26 @@ Abaixo da tabela vem a prévia da próxima semana.
 - unitários: situação das atividades e regra de passagem dos lembretes;
 - integração: dados da obra Palco na semana 2 e ciclo completo dos lembretes;
 - ponta a ponta: `tests/e2e/painel-obra.cjs`.
+
+## Modo TV por obra (06/11/2026)
+
+**Endereço:** `/painel-tv/obras`. Também abre pelo botão **"TV: obra a obra"** no painel inicial.
+
+**Como funciona:**
+- Mostra o **painel de cada obra ativa** em tela cheia, uma de cada vez, na ordem do código.
+- Passa para a próxima a cada **60 segundos**. O tempo pode ser ajustado com `?intervalo=` (de 15 a 600 segundos), por exemplo `/painel-tv/obras?intervalo=90`.
+- Cada troca recarrega a página, então os números estão sempre atualizados.
+
+**Na tela:**
+- uma barra amarela no topo mostra o tempo até a próxima obra;
+- as obras aparecem em "pílulas", com a atual destacada; clicar numa pílula pula para ela;
+- o canto direito mostra "Obra X de N", qual é a próxima e a hora da atualização.
+
+**Diferenças em relação ao painel normal:**
+- sem botões, links, seletor de semana e edição de lembretes;
+- a lista de atividades mostra até 7 (atrasadas primeiro);
+- se o conteúdo não couber na TV, a tela desce sozinha até o fim e volta ao topo antes da troca.
+
+**Acesso:** exige login. Cada perfil vê só as suas obras; os valores só aparecem para quem tem acesso a Medições e Orçamentos.
+
+**Teste:** `tests/e2e/tv-obras.cjs` (troca automática, rolagem e ausência de edição).

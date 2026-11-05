@@ -47,7 +47,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           {verValores && <Link href="/?visao=engenheiros" role="tab" aria-selected={visao === "engenheiros"} className={clsx("rounded-md px-3 py-1.5 font-medium", visao === "engenheiros" ? "bg-marca text-white" : "text-suave hover:text-texto")}>Por engenheiro</Link>}
           <Link href="/?visao=cartoes" role="tab" aria-selected={visao === "cartoes"} className={clsx("rounded-md px-3 py-1.5 font-medium", visao === "cartoes" ? "bg-marca text-white" : "text-suave hover:text-texto")}>Cartões e pendências</Link>
         </div>
-        {verValores && <Link href="/painel-tv" target="_blank" className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-borda bg-white px-3 py-1.5 text-sm hover:bg-zinc-50"><Monitor className="size-4" /> Modo TV</Link>}
+        <div className="ml-auto flex gap-2">
+          {verValores && <Link href="/painel-tv" target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border border-borda bg-white px-3 py-1.5 text-sm hover:bg-zinc-50"><Monitor className="size-4" /> TV: engenheiros</Link>}
+          <Link href="/painel-tv/obras" target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border border-borda bg-white px-3 py-1.5 text-sm hover:bg-zinc-50"><Monitor className="size-4" /> TV: obra a obra</Link>
+        </div>
       </div>
 
       {visao === "engenheiros" && eng ? (
