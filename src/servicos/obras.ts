@@ -19,10 +19,31 @@ export interface ResumoEstrutura {
   vinculados: number;
 }
 
+/** Tipo de pessoa provável pelo nome (empresa quando tem LTDA, S.A., ME, EPP, EIRELI…). */
+const pareceEmpresa = (nome: string) => /\b(ltda|s\/?a|me|epp|eireli|mei|cia|incorporadora|construtora|condom[ií]nio|associa[cç][aã]o)\b\.?/i.test(nome);
+
+/**
+ * Cliente da obra: pelo nome digitado (encontra o existente, sem diferenciar maiúsculas, ou cadastra um novo na mesma
+ * transação) ou pelo id já vinculado. Mantém o cliente atual quando o nome digitado é o dele.
+ */
+async function resolverCliente(db: Executor, ctx: Contexto, d: DadosObra): Promise<string> {
+  const nome = d.clienteNome?.replace(/\s+/g, " ").trim();
+  if (d.clienteId) {
+    const [atual] = await db.select({ id: cliente.id, nome: cliente.nome }).from(cliente)
+      .where(and(eq(cliente.id, d.clienteId), eq(cliente.empresaId, ctx.empresaId), isNull(cliente.excluidoEm))).limit(1);
+    if (atual && (!nome || atual.nome.trim().toLowerCase() === nome.toLowerCase())) return atual.id;
+    if (!nome) throw new ErroNegocio("Cliente não encontrado", "clienteNome");
+  }
+  const [existente] = await db.select({ id: cliente.id }).from(cliente)
+    .where(and(eq(cliente.empresaId, ctx.empresaId), isNull(cliente.excluidoEm), sql`lower(trim(${cliente.nome})) = ${nome!.toLowerCase()}`))
+    .orderBy(asc(cliente.criadoEm)).limit(1);
+  if (existente) return existente.id;
+  const [novo] = await db.insert(cliente).values({ empresaId: ctx.empresaId, nome: nome!, tipoPessoa: pareceEmpresa(nome!) ? "PJ" : "PF", observacoes: "Cadastrado no cadastro da obra. Complete documento e contatos." }).returning();
+  await registrarAuditoria(db, { empresaId: ctx.empresaId, usuarioId: ctx.usuarioId, acao: "CRIAR", entidade: "cliente", entidadeId: novo!.id, descricao: `Cliente "${nome}" cadastrado a partir do cadastro de obra`, depois: novo, ip: ctx.ip });
+  return novo!.id;
+}
+
 async function validarReferencias(db: Executor, ctx: Contexto, d: DadosObra) {
-  const [c] = await db.select({ id: cliente.id }).from(cliente)
-    .where(and(eq(cliente.id, d.clienteId), eq(cliente.empresaId, ctx.empresaId), isNull(cliente.excluidoEm))).limit(1);
-  if (!c) throw new ErroNegocio("Cliente não encontrado", "clienteId");
   const ids = [d.gestorId, d.responsavelTecnicoId].filter((x): x is string => Boolean(x));
   if (ids.length) {
     const us = await db.select({ id: usuario.id }).from(usuario)
@@ -31,6 +52,9 @@ async function validarReferencias(db: Executor, ctx: Contexto, d: DadosObra) {
     if (d.responsavelTecnicoId && !us.some((u) => u.id === d.responsavelTecnicoId)) throw new ErroNegocio("Responsável técnico inválido ou inativo", "responsavelTecnicoId");
   }
 }
+
+/** Dados da obra para gravar (sem o nome digitado do cliente, já resolvido em clienteId). */
+const paraGravar = (d: DadosObra, clienteId: string) => { const { clienteNome: _n, ...resto } = d; return { ...resto, clienteId }; };
 
 const papeis = (ctx: Contexto, d: Pick<DadosObra, "gestorId" | "responsavelTecnicoId">) =>
   [
@@ -48,6 +72,7 @@ export async function criarObra(banco: BancoDados, ctx: Contexto, d: DadosObra) 
   try {
     return await banco.transaction(async (tx) => {
       await validarReferencias(tx, ctx, d);
+      const clienteId = await resolverCliente(tx, ctx, d);
 
       // Serializa a geração de códigos da empresa para evitar duplicidade em cadastros simultâneos.
       await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${"obra_codigo:" + ctx.empresaId}))`);
@@ -59,7 +84,7 @@ export async function criarObra(banco: BancoDados, ctx: Contexto, d: DadosObra) 
         codigo = proximoCodigoObra(ano, existentes.map((e) => e.c));
       }
 
-      const [nova] = await tx.insert(obra).values({ ...d, codigo, empresaId: ctx.empresaId, criadoPor: ctx.usuarioId }).returning();
+      const [nova] = await tx.insert(obra).values({ ...paraGravar(d, clienteId), codigo, empresaId: ctx.empresaId, criadoPor: ctx.usuarioId }).returning();
       if (!nova) throw new Error("Falha ao inserir obra");
 
       const codigoCC = `OBR-${codigo}`;
@@ -107,9 +132,10 @@ export async function atualizarObra(banco: BancoDados, ctx: Contexto, obraId: st
         .where(and(eq(obra.id, obraId), eq(obra.empresaId, ctx.empresaId), isNull(obra.excluidoEm))).for("update");
       if (!antes) throw new ErroNegocio("Obra não encontrada");
       await validarReferencias(tx, ctx, d);
+      const clienteId = await resolverCliente(tx, ctx, { ...d, clienteId: d.clienteId ?? antes.clienteId });
       const codigo = d.codigo ?? antes.codigo;
 
-      const [depois] = await tx.update(obra).set({ ...d, codigo }).where(eq(obra.id, obraId)).returning();
+      const [depois] = await tx.update(obra).set({ ...paraGravar(d, clienteId), codigo }).where(eq(obra.id, obraId)).returning();
 
       if (codigo !== antes.codigo || d.nome !== antes.nome) {
         await tx.update(centroCusto).set({ codigo: `OBR-${codigo}`, nome: `${codigo} · ${d.nome}` }).where(eq(centroCusto.obraId, obraId));

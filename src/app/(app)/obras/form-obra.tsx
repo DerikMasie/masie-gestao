@@ -25,9 +25,11 @@ export function FormObra({ acao, obra, clientes, usuarios, cancelar }: {
           <div className="sm:col-span-2"><Campo nome="codigo" rotulo="Código da obra" defaultValue={obra?.codigo} placeholder="Automático (ex.: 2026-0007)" ajuda={obra ? "Alterar o código também renomeia o centro de custo." : "Deixe em branco para gerar no padrão AAAA-NNNN."} /></div>
           <div className="sm:col-span-4"><Campo nome="nome" rotulo="Nome da obra" obrigatorio defaultValue={obra?.nome} /></div>
           <div className="sm:col-span-3">
-            <CampoSelecao nome="clienteId" rotulo="Cliente" obrigatorio vazio="Selecione…" defaultValue={obra?.clienteId}
-              opcoes={clientes.map((c) => ({ valor: c.id, rotulo: c.nome }))}
-              ajuda={<>Não encontrou? <Link href="/clientes/novo" className="text-texto underline decoration-destaque decoration-2 underline-offset-2" target="_blank">Cadastre o cliente</Link> e recarregue.</>} />
+            {obra && <input type="hidden" name="clienteId" value={obra.clienteId} />}
+            <Campo nome="clienteNome" rotulo="Cliente" obrigatorio list="clientes-lista" autoComplete="off" placeholder="Digite o nome do cliente"
+              defaultValue={obra ? clientes.find((c) => c.id === obra.clienteId)?.nome ?? "" : ""}
+              ajuda="Digite livremente. Se for um cliente novo, ele é cadastrado junto com a obra (complete os dados depois em Clientes)." />
+            <datalist id="clientes-lista">{clientes.map((c) => <option key={c.id} value={c.nome} />)}</datalist>
           </div>
           <div className="sm:col-span-3"><Campo nome="tipoObra" rotulo="Tipo de obra" defaultValue={obra?.tipoObra ?? ""} placeholder="Reforma comercial, residencial…" list="tipos-obra" /></div>
           <datalist id="tipos-obra">

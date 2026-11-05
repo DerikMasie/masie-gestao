@@ -81,7 +81,9 @@ export type DadosBancarios = z.infer<typeof esquemaDadosBancarios>;
 export const esquemaObra = z.object({
   codigo: z.preprocess(vazioParaNull, z.string().regex(CODIGO_OBRA_REGEX, "Código inválido (use letras, números, ponto, hífen)").nullable().default(null)),
   nome: textoObrigatorio("Nome da obra"),
-  clienteId: z.uuid("Selecione o cliente"),
+  /** Cliente existente (edição) e/ou nome digitado: o nome encontra ou cadastra o cliente. */
+  clienteId: uuidOpcional,
+  clienteNome: textoOpcional(200),
   endereco: textoOpcional(300),
   cidade: textoOpcional(100),
   uf: z.preprocess(vazioParaNull, z.string().regex(/^[A-Za-z]{2}$/, "UF inválida").transform((v) => v.toUpperCase()).nullable().default(null)),
@@ -98,6 +100,7 @@ export const esquemaObra = z.object({
   situacao: z.enum(Object.keys(SITUACOES_OBRA) as [keyof typeof SITUACOES_OBRA, ...(keyof typeof SITUACOES_OBRA)[]]).default("EM_ORCAMENTO"),
   observacoes: textoOpcional(5000),
 }).superRefine((d, ctx) => {
+  if (!d.clienteId && !d.clienteNome) ctx.addIssue({ code: "custom", path: ["clienteNome"], message: "Informe o cliente" });
   if (d.dataFimContratual < d.dataInicio) ctx.addIssue({ code: "custom", path: ["dataFimContratual"], message: "O término deve ser posterior ao início" });
   if (d.situacao === "CONCLUIDA" && !d.dataConclusao) ctx.addIssue({ code: "custom", path: ["dataConclusao"], message: "Informe a data de conclusão" });
   if (d.dataConclusao && d.dataConclusao < d.dataInicio) ctx.addIssue({ code: "custom", path: ["dataConclusao"], message: "A conclusão deve ser posterior ao início" });
