@@ -56,3 +56,30 @@ O relatório da semana 5 da obra 2026-0001 está emitido (v1) com 7 imagens gera
 
 - **Link para o cliente:** página pública, sem login, com a última versão emitida. Foi pedido como melhoria futura e deve usar um link secreto revogável.
 - **Envio por e-mail ou WhatsApp** direto do sistema.
+
+## Cores do relatório por obra (06/11/2026)
+
+Onde fica: **Obra → Gestão da obra → Relatório semanal → Cores do relatório desta obra**.
+
+**São 3 cores:**
+- **principal:** faixas de título, barras, rosca e linha do realizado;
+- **destaque:** marca nas faixas, borda das seções e traço do previsto;
+- **fundo das seções:** tom claro atrás dos títulos das seções.
+
+**Paletas prontas:**
+- Masie (padrão)
+- Grafite e azul
+- Marinho e dourado
+- Verde
+- Terracota
+- Vinho
+
+Também dá para escolher cores livres pelo seletor. A tela mostra uma prévia ao vivo.
+
+**Contraste:** o texto sobre a cor principal fica branco ou preto automaticamente. Há aviso quando a cor principal é clara demais ou o fundo das seções escuro demais.
+
+**Relatórios já emitidos:** guardam as cores da emissão. A mudança vale para as prévias e para as próximas emissões.
+
+**Permissão:** Relatórios → editar.
+
+**Teste ponta a ponta:** `tests/e2e/cores-relatorio.cjs`.

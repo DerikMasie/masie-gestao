@@ -9,7 +9,7 @@ import { importarFisico, salvarSemanas } from "@/servicos/fisico";
 import { fecharMedicao, alterarSituacaoMedicao } from "@/servicos/medicoes";
 import {
   adicionarFoto, carregarRelatorio, conteudoFotos, criarRelatorio, emitirRelatorio, excluirRelatorio, moverFoto, reabrirRelatorio, removerFoto,
-  salvarFoto, salvarTextos,
+  salvarCoresRelatorio, salvarFoto, salvarTextos,
 } from "@/servicos/relatorios";
 import { db, prepararEmpresa } from "./ajuda";
 import { planilhaPalco } from "./palco";
@@ -95,5 +95,25 @@ describe("relatório semanal", () => {
     const ger = (await carregarFisico(db, base.empresaId, o.id)).servicos.find((s) => s.descricao.startsWith("Gerenciamento"))!;
     await salvarSemanas(db, base.ctx, o.id, "realizado", [{ servicoId: ger.id, semana: 5, valor: 0.1 }]);
     expect((await carregarRelatorio(db, base.empresaId, o.id, r.id)).dados.avanco.realizado).toBeCloseTo(antes + 0.1 / 50, 9);
+  });
+
+  it("cores por obra: entram na prévia, ficam congeladas na emissão e o PDF usa a paleta", async () => {
+    const o = await obraPalco();
+    const r = await criarRelatorio(db, base.ctx, o.id, 4);
+    expect((await carregarRelatorio(db, base.empresaId, o.id, r.id)).dados.cores).toEqual({ principal: "#161616", destaque: "#f2d468", fundo: "#fbf3d3" });
+    const azul = { principal: "#1f2937", destaque: "#3b82f6", fundo: "#e3edfd" };
+    expect((await salvarCoresRelatorio(db, base.ctx, o.id, azul)).avisos).toEqual([]);
+    await expect(salvarCoresRelatorio(db, base.ctx, o.id, { ...azul, destaque: "azul" })).rejects.toThrow("Cor inválida");
+    expect((await salvarCoresRelatorio(db, base.ctx, o.id, { principal: "#f2d468", destaque: "#000000", fundo: "#333333" })).avisos).toHaveLength(2);
+    await salvarCoresRelatorio(db, base.ctx, o.id, azul);
+    await emitirRelatorio(db, base.ctx, o.id, r.id);
+    await salvarCoresRelatorio(db, base.ctx, o.id, null); // volta ao padrão
+    const c = await carregarRelatorio(db, base.empresaId, o.id, r.id);
+    expect(c.dados.cores).toEqual(azul); // emitido mantém as cores da emissão
+    const rel = c.relatorio;
+    const pdf = await renderToBuffer(RelatorioSemanalPdf({ d: c.dados, versao: "v1", fotos: [], textos: { tarefasRealizadas: "Texto curto", tarefasProximaSemana: "", anomalias: "", acompanhamentoPrazo: "" } }));
+    void rel;
+    if (process.env.PDF_CORES) (await import("node:fs")).writeFileSync(process.env.PDF_CORES, pdf);
+    expect(paginas(pdf)).toBe(2);
   });
 });

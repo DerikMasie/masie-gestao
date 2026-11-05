@@ -82,7 +82,7 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
         <VistaGerencial m={await carregarMedicoes(db, u.empresaId, obraId)} obraId={obraId} podePagamentos={temPermissao(u, "medicoes", "editar")} />
       ) : <Aviso tom="alerta">Seu perfil não tem acesso ao Gerencial (valores da obra).</Aviso>)}
 
-      {vista === "relatorio" && <VistaRelatorio obraId={obraId} u={u} sp={sp} base={base} inicioObra={f.obra.dataInicio} semanaAtual={f.semanaAtual} nSemanas={f.nSemanas} />}
+      {vista === "relatorio" && <VistaRelatorio obraId={obraId} u={u} sp={sp} base={base} inicioObra={f.obra.dataInicio} semanaAtual={f.semanaAtual} nSemanas={f.nSemanas} cores={f.obra.relatorioCores} />}
 
       {vista === "avanco" && <VistaAvanco f={f} semanas={semanas} semanaRef={semanaRef} verValores={verValores} />}
 

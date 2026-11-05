@@ -191,6 +191,8 @@ export const obra = pgTable("obra", {
   percentualEntrada: percentual().notNull().default("0"),
   /** Período de fechamento da medição, em semanas (1 a 4). Padrão: quinzenal (2). */
   semanasPorMedicao: integer().notNull().default(2),
+  /** Cores do relatório semanal desta obra ({ principal, destaque, fundo }); nulo = padrão Masie. */
+  relatorioCores: jsonb().$type<{ principal: string; destaque: string; fundo: string }>(),
   /** Provisório na Fase 2: na Fase 3 passa a ser derivado do orçamento-base aprovado. */
   orcamentoCustoAprovado: dinheiro().notNull().default("0"),
   margemPrevista: percentual(),

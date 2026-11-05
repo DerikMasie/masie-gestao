@@ -1,0 +1,1 @@
+ALTER TABLE "obra" ADD COLUMN "relatorio_cores" jsonb;

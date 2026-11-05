@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Circle, Document, G, Image, Line, Page, Path, Polyline, Rect, StyleSheet, Svg, Text, View } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
-import { paginarFotos } from "@/dominio/relatorio";
+import { escurecer, normalizarCores, paginarFotos, textoSobre, type CoresRelatorio } from "@/dominio/relatorio";
 import type { DadosRelatorio, TextosRelatorio } from "@/servicos/relatorios";
 
 /**
@@ -48,8 +48,8 @@ function logo() {
   return logoCache;
 }
 
-function Faixa({ children }: { children: ReactNode }) {
-  return <View style={s.faixa}><View style={s.faixaMarca} /><Text style={s.faixaTexto}>{children}</Text></View>;
+function Faixa({ children, c }: { children: ReactNode; c: CoresRelatorio }) {
+  return <View style={[s.faixa, { backgroundColor: c.principal }]}><View style={[s.faixaMarca, { backgroundColor: c.destaque }]} /><Text style={[s.faixaTexto, { color: textoSobre(c.principal) }]}>{children}</Text></View>;
 }
 
 function Rodape({ d, versao }: { d: DadosRelatorio; versao: string }) {
@@ -78,7 +78,7 @@ function Cabecalho({ d }: { d: DadosRelatorio }) {
 }
 
 /** Rosca de progresso. */
-function Rosca({ valor, tamanho = 104 }: { valor: number; tamanho?: number }) {
+function Rosca({ valor, cor, tamanho = 104 }: { valor: number; cor: string; tamanho?: number }) {
   const v = Math.max(0, Math.min(valor, 1));
   const r = tamanho / 2 - 9;
   const c = tamanho / 2;
@@ -89,7 +89,7 @@ function Rosca({ valor, tamanho = 104 }: { valor: number; tamanho?: number }) {
     <View style={{ width: tamanho, height: tamanho, alignSelf: "center" }}>
       <Svg width={tamanho} height={tamanho}>
         <Circle cx={c} cy={c} r={r} stroke={CINZA_CLARO} strokeWidth={14} fill="none" />
-        {v >= 0.9999 ? <Circle cx={c} cy={c} r={r} stroke={PRETO} strokeWidth={14} fill="none" /> : v > 0 && arco ? <Path d={arco} stroke={PRETO} strokeWidth={14} fill="none" /> : null}
+        {v >= 0.9999 ? <Circle cx={c} cy={c} r={r} stroke={cor} strokeWidth={14} fill="none" /> : v > 0 && arco ? <Path d={arco} stroke={cor} strokeWidth={14} fill="none" /> : null}
       </Svg>
       <View style={{ position: "absolute", top: 0, left: 0, width: tamanho, height: tamanho, alignItems: "center", justifyContent: "center" }}>
         <Text style={{ fontSize: 20, fontFamily: "Helvetica-Bold" }}>{pct(v)}</Text>
@@ -99,15 +99,15 @@ function Rosca({ valor, tamanho = 104 }: { valor: number; tamanho?: number }) {
   );
 }
 
-function Etapas({ etapas }: { etapas: DadosRelatorio["avanco"]["etapas"] }) {
+function Etapas({ etapas, cor }: { etapas: DadosRelatorio["avanco"]["etapas"]; cor: CoresRelatorio }) {
   return (
     <View>
       {etapas.map((e) => (
         <View key={e.nome} style={{ flexDirection: "row", alignItems: "center", marginBottom: 2.4 }}>
           <Text style={{ width: 128, fontSize: 7, color: CINZA, textTransform: "uppercase" }}>{e.nome.length > 32 ? `${e.nome.slice(0, 31)}…` : e.nome}</Text>
           <View style={{ flexGrow: 1, height: 6, backgroundColor: CINZA_CLARO, borderRadius: 3, position: "relative" }}>
-            <View style={{ width: `${Math.min(e.realizado, 1) * 100}%`, height: 6, backgroundColor: PRETO, borderRadius: 3 }} />
-            {e.previsto > 0 ? <View style={{ position: "absolute", left: `${Math.min(e.previsto, 1) * 100}%`, top: -2, width: 1.2, height: 10, backgroundColor: "#6b5300" }} /> : null}
+            <View style={{ width: `${Math.min(e.realizado, 1) * 100}%`, height: 6, backgroundColor: cor.principal, borderRadius: 3 }} />
+            {e.previsto > 0 ? <View style={{ position: "absolute", left: `${Math.min(e.previsto, 1) * 100}%`, top: -2, width: 1.2, height: 10, backgroundColor: escurecer(cor.destaque, 0.45) }} /> : null}
           </View>
           <Text style={{ width: 34, textAlign: "right", fontSize: 7.5, fontFamily: "Helvetica-Bold" }}>{pct(e.realizado)}</Text>
         </View>
@@ -118,7 +118,7 @@ function Etapas({ etapas }: { etapas: DadosRelatorio["avanco"]["etapas"] }) {
 }
 
 /** Curva de avanço físico acumulado (previsto tracejado × realizado). */
-function Curva({ pontos, largura = 523, altura = 132 }: { pontos: DadosRelatorio["avanco"]["curva"]; largura?: number; altura?: number }) {
+function Curva({ pontos, cor, largura = 523, altura = 132 }: { pontos: DadosRelatorio["avanco"]["curva"]; cor: string; largura?: number; altura?: number }) {
   if (!pontos.length) return null;
   const esq = 30, dir = 6, topo = 6, base = 22;
   const w = largura - esq - dir, h = altura - topo - base;
@@ -138,20 +138,20 @@ function Curva({ pontos, largura = 523, altura = 132 }: { pontos: DadosRelatorio
       ))}
       {pontos.map((p, i) => (i % passo === 0 || i === n - 1 ? <Text key={p.semana} x={px(i)} y={topo + h + 12} style={{ fontSize: 6.2 }} fill={CINZA} textAnchor="middle">{ddmm(p.inicio)}</Text> : null))}
       <Polyline points={prev} stroke="#a1a1aa" strokeWidth={1.4} strokeDasharray="4 3" fill="none" />
-      {real ? <Polyline points={real} stroke={PRETO} strokeWidth={1.8} fill="none" /> : null}
-      {pontos.filter((p) => p.realizado != null).map((p) => <Circle key={p.semana} cx={px(pontos.indexOf(p))} cy={py(p.realizado!)} r={1.8} fill={PRETO} />)}
+      {real ? <Polyline points={real} stroke={cor} strokeWidth={1.8} fill="none" /> : null}
+      {pontos.filter((p) => p.realizado != null).map((p) => <Circle key={p.semana} cx={px(pontos.indexOf(p))} cy={py(p.realizado!)} r={1.8} fill={cor} />)}
       <Rect x={esq + w - 128} y={topo + h + 15} width={8} height={2} fill="#a1a1aa" />
       <Text x={esq + w - 116} y={topo + h + 18} style={{ fontSize: 6.5 }} fill={CINZA}>Previsto</Text>
-      <Rect x={esq + w - 70} y={topo + h + 15} width={8} height={2} fill={PRETO} />
+      <Rect x={esq + w - 70} y={topo + h + 15} width={8} height={2} fill={cor} />
       <Text x={esq + w - 58} y={topo + h + 18} style={{ fontSize: 6.5 }} fill={CINZA}>Realizado</Text>
     </Svg>
   );
 }
 
-function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
+function Secao({ titulo, children, c }: { titulo: string; children: ReactNode; c: CoresRelatorio }) {
   return (
     <View wrap={false} minPresenceAhead={40}>
-      <View style={s.secao}><Text style={s.secaoTitulo}>{titulo}</Text></View>
+      <View style={[s.secao, { backgroundColor: c.fundo, borderLeftColor: c.destaque }]}><Text style={s.secaoTitulo}>{titulo}</Text></View>
       <View>{children}</View>
     </View>
   );
@@ -162,9 +162,9 @@ function TextoLivre({ texto, vazio }: { texto: string; vazio: string }) {
   return t ? <Text style={s.texto}>{t}</Text> : <Text style={[s.texto, s.suave]}>{vazio}</Text>;
 }
 
-function LinhaResumo({ rotulo, valor, forte }: { rotulo: string; valor: string; forte?: boolean }) {
+function LinhaResumo({ rotulo, valor, forte, cor }: { rotulo: string; valor: string; forte?: boolean; cor: string }) {
   return (
-    <View style={[{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3.5 }, forte ? { borderTopWidth: 1, borderTopColor: PRETO, borderStyle: "dashed", marginTop: 2, paddingTop: 5 } : {}]}>
+    <View style={[{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 3.5 }, forte ? { borderTopWidth: 1, borderTopColor: cor, borderStyle: "dashed", marginTop: 2, paddingTop: 5 } : {}]}>
       <Text style={forte ? { fontFamily: "Helvetica-Bold" } : { color: CINZA }}>{rotulo}</Text>
       <Text style={forte ? { fontFamily: "Helvetica-Bold" } : {}}>{valor}</Text>
     </View>
@@ -178,45 +178,46 @@ export function RelatorioSemanalPdf({ d, textos, fotos, versao }: { d: DadosRela
   const deposito: [string, string | null][] = [["Banco", d.empresa.banco], ["Agência", d.empresa.agencia], ["Conta", d.empresa.conta], ["CNPJ", d.empresa.cnpj], ["PIX", d.empresa.pix]];
   const paginas = paginarFotos(fotos.length);
   const larguraUtil = 523;
+  const cores = normalizarCores(d.cores);
   return (
     <Document title={`Relatório semanal ${d.obra.codigo} - semana ${d.semana}`} author={d.empresa.nome} creator="Masie Gestão" language="pt-BR">
       {/* Página 1 — Situação da obra */}
       <Page size="A4" style={s.pagina}>
         <Cabecalho d={d} />
-        <Faixa>SITUAÇÃO DA OBRA</Faixa>
+        <Faixa c={cores}>SITUAÇÃO DA OBRA</Faixa>
         <View style={{ flexDirection: "row", marginBottom: 8 }}>
           <View style={{ width: 170, paddingRight: 12 }}>
             <Text style={s.subtitulo}>PROGRESSO DA OBRA</Text>
-            <Rosca valor={d.avanco.realizado} />
+            <Rosca valor={d.avanco.realizado} cor={cores.principal} />
             <Text style={[s.suave, { textAlign: "center", marginTop: 6, fontSize: 7.5 }]}>Previsto até a semana: {pct(d.avanco.previsto)}</Text>
           </View>
           <View style={{ flex: 1 }}>
             <Text style={s.subtitulo}>EVOLUÇÃO POR TIPO DE SERVIÇO</Text>
-            <Etapas etapas={d.avanco.etapas} />
+            <Etapas etapas={d.avanco.etapas} cor={cores} />
           </View>
         </View>
         <Text style={s.subtitulo}>AVANÇO FÍSICO</Text>
-        <Curva pontos={d.avanco.curva} />
-        <Secao titulo="TAREFAS FINALIZADAS E EM ANDAMENTO"><TextoLivre texto={textos.tarefasRealizadas} vazio="Nenhuma tarefa registrada na semana." /></Secao>
-        <Secao titulo="TAREFAS DA PRÓXIMA SEMANA"><TextoLivre texto={textos.tarefasProximaSemana} vazio="-" /></Secao>
-        <Secao titulo="ANOMALIAS OU IRREGULARIDADES OBSERVADAS"><TextoLivre texto={textos.anomalias} vazio="Nenhuma anomalia observada na semana." /></Secao>
-        <Secao titulo="ACOMPANHAMENTO DO PRAZO"><TextoLivre texto={textos.acompanhamentoPrazo} vazio="-" /></Secao>
+        <Curva pontos={d.avanco.curva} cor={cores.principal} />
+        <Secao c={cores} titulo="TAREFAS FINALIZADAS E EM ANDAMENTO"><TextoLivre texto={textos.tarefasRealizadas} vazio="Nenhuma tarefa registrada na semana." /></Secao>
+        <Secao c={cores} titulo="TAREFAS DA PRÓXIMA SEMANA"><TextoLivre texto={textos.tarefasProximaSemana} vazio="-" /></Secao>
+        <Secao c={cores} titulo="ANOMALIAS OU IRREGULARIDADES OBSERVADAS"><TextoLivre texto={textos.anomalias} vazio="Nenhuma anomalia observada na semana." /></Secao>
+        <Secao c={cores} titulo="ACOMPANHAMENTO DO PRAZO"><TextoLivre texto={textos.acompanhamentoPrazo} vazio="-" /></Secao>
         <Rodape d={d} versao={versao} />
       </Page>
 
       {/* Página 2 — Relatório financeiro */}
       <Page size="A4" style={s.pagina}>
         <Cabecalho d={d} />
-        <Faixa>RELATÓRIO FINANCEIRO</Faixa>
+        <Faixa c={cores}>RELATÓRIO FINANCEIRO</Faixa>
         <View style={{ flexDirection: "row", gap: 24 }}>
           <View style={{ flex: 1.15 }}>
             <Text style={s.subtitulo}>RESUMO DO CONTRATO</Text>
-            <LinhaResumo rotulo="Valor total do contrato" valor={moeda(c.contrato)} />
-            <LinhaResumo rotulo={`Entrada (${pct(c.percentualEntrada)})`} valor={moeda(-c.entrada)} />
-            <LinhaResumo rotulo="Aditivos / descontos / reembolsos" valor={moeda(c.ajustes)} />
-            <LinhaResumo rotulo="Medições quitadas" valor={moeda(c.quitadas ? -c.quitadas : 0)} />
-            <LinhaResumo rotulo="Material já faturado em nome do cliente" valor={moeda(c.faturamentoDireto ? -c.faturamentoDireto : 0)} />
-            <LinhaResumo rotulo="Saldo a pagar" valor={moeda(c.saldo)} forte />
+            <LinhaResumo cor={cores.principal} rotulo="Valor total do contrato" valor={moeda(c.contrato)} />
+            <LinhaResumo cor={cores.principal} rotulo={`Entrada (${pct(c.percentualEntrada)})`} valor={moeda(-c.entrada)} />
+            <LinhaResumo cor={cores.principal} rotulo="Aditivos / descontos / reembolsos" valor={moeda(c.ajustes)} />
+            <LinhaResumo cor={cores.principal} rotulo="Medições quitadas" valor={moeda(c.quitadas ? -c.quitadas : 0)} />
+            <LinhaResumo cor={cores.principal} rotulo="Material já faturado em nome do cliente" valor={moeda(c.faturamentoDireto ? -c.faturamentoDireto : 0)} />
+            <LinhaResumo cor={cores.principal} rotulo="Saldo a pagar" valor={moeda(c.saldo)} forte />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[s.subtitulo, { textAlign: "right" }]}>INFORMAÇÕES PARA DEPÓSITO</Text>
@@ -229,7 +230,7 @@ export function RelatorioSemanalPdf({ d, textos, fotos, versao }: { d: DadosRela
         <View style={{ flexDirection: "row", gap: 24, marginTop: 18 }}>
           <View style={{ flex: 1 }}>
             <Text style={s.subtitulo}>MEDIÇÕES</Text>
-            <View style={s.cabTab}>
+            <View style={[s.cabTab, { borderBottomColor: cores.principal }]}>
               <Text style={{ width: 22, fontFamily: "Helvetica-Bold" }}>Nº</Text><Text style={{ width: 52, fontFamily: "Helvetica-Bold" }}>Data</Text>
               <Text style={{ flex: 1, textAlign: "right", fontFamily: "Helvetica-Bold" }}>Valor total</Text><Text style={{ width: 54, textAlign: "center", fontFamily: "Helvetica-Bold" }}>Situação</Text>
             </View>
@@ -239,7 +240,7 @@ export function RelatorioSemanalPdf({ d, textos, fotos, versao }: { d: DadosRela
                 <Text style={{ width: 52 }}>{br(m.data).slice(0, 5)}</Text>
                 <Text style={{ flex: 1, textAlign: "right", color: m.valor == null ? CINZA : PRETO }}>{m.valor == null ? "-" : moeda(m.valor)}</Text>
                 <View style={{ width: 54, alignItems: "center", justifyContent: "center" }}>
-                  <Svg width={9} height={9}><Circle cx={4.5} cy={4.5} r={3.6} stroke={PRETO} strokeWidth={0.8} fill={m.situacao === "PAGA" ? PRETO : "none"} /></Svg>
+                  <Svg width={9} height={9}><Circle cx={4.5} cy={4.5} r={3.6} stroke={cores.principal} strokeWidth={0.8} fill={m.situacao === "PAGA" ? cores.principal : "none"} /></Svg>
                 </View>
               </View>
             ))}
@@ -247,7 +248,7 @@ export function RelatorioSemanalPdf({ d, textos, fotos, versao }: { d: DadosRela
           </View>
           <View style={{ flex: 1.2 }}>
             <Text style={s.subtitulo}>ADITIVOS / DESCONTOS / REEMBOLSOS</Text>
-            <View style={s.cabTab}>
+            <View style={[s.cabTab, { borderBottomColor: cores.principal }]}>
               <Text style={{ width: 58, fontFamily: "Helvetica-Bold" }}>Tipo</Text><Text style={{ width: 68, textAlign: "right", fontFamily: "Helvetica-Bold" }}>Valor</Text>
               <Text style={{ flex: 1, paddingLeft: 8, fontFamily: "Helvetica-Bold" }}>Descrição</Text>
             </View>
@@ -267,7 +268,7 @@ export function RelatorioSemanalPdf({ d, textos, fotos, versao }: { d: DadosRela
       {paginas.map((pag, ip) => (
         <Page key={ip} size="A4" style={s.pagina}>
           <Cabecalho d={d} />
-          <Faixa>{`RELATÓRIO FOTOGRÁFICO${paginas.length > 1 ? ` (${ip + 1}/${paginas.length})` : ""}`}</Faixa>
+          <Faixa c={cores}>{`RELATÓRIO FOTOGRÁFICO${paginas.length > 1 ? ` (${ip + 1}/${paginas.length})` : ""}`}</Faixa>
           {pag.map((linha, il) => {
             const gap = 12;
             const larg = linha.colunas === 1 ? larguraUtil * (pag.length === 1 ? 1 : 0.78) : (larguraUtil - gap) / 2;

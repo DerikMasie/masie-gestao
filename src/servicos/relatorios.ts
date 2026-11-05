@@ -1,9 +1,9 @@
 import { and, asc, desc, eq, max, sql } from "drizzle-orm";
 import type { BancoDados, Executor } from "@/db";
-import { anexo, cliente, empresa, relatorioFoto, relatorioSemanal } from "@/db/schema";
+import { anexo, cliente, empresa, obra, relatorioFoto, relatorioSemanal } from "@/db/schema";
 import { somarDias } from "@/dominio/calendario";
 import { datasDaSemana } from "@/dominio/fisico";
-import { sugerirPrazo, sugerirProximaSemana, sugerirRealizadas } from "@/dominio/relatorio";
+import { avisosCores, corValida, normalizarCores, sugerirPrazo, sugerirProximaSemana, sugerirRealizadas, type CoresRelatorio } from "@/dominio/relatorio";
 import { anexarArquivo, lerConteudo, removerAnexo } from "./anexos";
 import { auditarEdicao, registrarAuditoria } from "./auditoria";
 import { type Contexto, ErroNegocio } from "./contexto";
@@ -27,6 +27,8 @@ export interface DadosRelatorio {
   contrato: { contrato: number; entrada: number; percentualEntrada: number; ajustes: number; quitadas: number; faturamentoDireto: number; saldo: number };
   medicoes: { numero: number; data: string; valor: number | null; situacao: "PAGA" | "NAO_PAGA"; fechada: boolean }[];
   ajustes: { tipo: "ADITIVO" | "DESCONTO" | "REEMBOLSO"; data: string; valor: number; descricao: string }[];
+  /** Cores da obra no momento da emissão (relatórios antigos sem o campo usam o padrão). */
+  cores?: CoresRelatorio;
 }
 
 const sextaDaSemana = (inicioObra: string, semana: number) => somarDias(datasDaSemana(inicioObra, semana).inicio, 4);
@@ -67,6 +69,7 @@ export async function dadosDoRelatorio(db: Executor, empresaId: string, obraId: 
     contrato: { ...m.resumo, percentualEntrada: Number(o.percentualEntrada) },
     medicoes,
     ajustes: m.ajustes.map((x) => ({ tipo: x.tipo, data: x.data, valor: x.valor, descricao: x.descricao })),
+    cores: normalizarCores(o.relatorioCores),
   };
 }
 
@@ -224,4 +227,19 @@ export async function conteudoFotos(db: Executor, fotos: { anexoId: string }[]) 
     out.push(await lerConteudo(a!.caminho, db));
   }
   return out;
+}
+
+// ───────────── Cores do relatório da obra ─────────────
+
+/** Salva as cores do relatório da obra (valem para os próximos relatórios e prévias; os emitidos mantêm as suas). */
+export async function salvarCoresRelatorio(banco: BancoDados, ctx: Contexto, obraId: string, cores: CoresRelatorio | null) {
+  if (cores && ![cores.principal, cores.destaque, cores.fundo].every(corValida)) throw new ErroNegocio("Cor inválida (use o formato #rrggbb)");
+  return banco.transaction(async (tx) => {
+    const [antes] = await tx.select().from(obra).where(and(eq(obra.id, obraId), eq(obra.empresaId, ctx.empresaId)));
+    if (!antes) throw new ErroNegocio("Obra não encontrada");
+    const valor = cores ? normalizarCores(cores) : null;
+    const [depois] = await tx.update(obra).set({ relatorioCores: valor }).where(eq(obra.id, obraId)).returning();
+    await auditarEdicao(tx, { empresaId: ctx.empresaId, usuarioId: ctx.usuarioId, entidade: "obra", entidadeId: obraId, obraId, descricao: "Cores do relatório semanal", ip: ctx.ip }, antes, depois!);
+    return { avisos: valor ? avisosCores(valor) : [] };
+  });
 }

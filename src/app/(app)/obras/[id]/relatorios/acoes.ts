@@ -9,7 +9,7 @@ import { contextoAtual, tratar, type EstadoForm } from "@/lib/acoes";
 import { AcessoNegado, exigirPermissao, podeAcessarObra } from "@/lib/auth/atual";
 import { ErroNegocio } from "@/servicos/contexto";
 import {
-  adicionarFoto, criarRelatorio, emitirRelatorio, excluirRelatorio, moverFoto, reabrirRelatorio, removerFoto, salvarFoto, salvarTextos,
+  adicionarFoto, criarRelatorio, emitirRelatorio, excluirRelatorio, moverFoto, reabrirRelatorio, removerFoto, salvarCoresRelatorio, salvarFoto, salvarTextos,
 } from "@/servicos/relatorios";
 
 /** Módulo "Relatórios semanais": criar = criar/editar rascunho e fotos; editar = emitir e reabrir; excluir = excluir rascunho. */
@@ -112,5 +112,17 @@ export async function removerFotoAcao(obraId: string, id: string, fotoId: string
     const ctx = await exigir(obraId, "criar");
     await removerFoto(db, ctx, obraId, uuid.parse(id), uuid.parse(fotoId));
     revalidar(obraId);
+  });
+}
+
+const hex = z.string().regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida");
+
+export async function salvarCoresAcao(obraId: string, cores: { principal: string; destaque: string; fundo: string } | null): Promise<EstadoForm> {
+  return tratar(async () => {
+    const ctx = await exigir(obraId, "editar");
+    const v = cores ? z.object({ principal: hex, destaque: hex, fundo: hex }).parse(cores) : null;
+    await salvarCoresRelatorio(db, ctx, obraId, v);
+    revalidar(obraId);
+    return { ok: true, mensagem: v ? "Cores salvas. Valem para as prévias e os próximos relatórios emitidos desta obra." : "Cores voltaram ao padrão Masie." };
   });
 }

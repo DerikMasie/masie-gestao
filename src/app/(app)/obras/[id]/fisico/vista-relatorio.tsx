@@ -8,14 +8,16 @@ import type { UsuarioSessao } from "@/servicos/sessoes";
 import { carregarRelatorio, listarRelatorios } from "@/servicos/relatorios";
 import { AcaoConfirmada, BotaoEnviar, CampoArea, CampoSelecao, Formulario } from "@/componentes/formulario";
 import { FotosRelatorio } from "@/componentes/fotos-relatorio";
+import { CoresRelatorioEditor } from "@/componentes/cores-relatorio";
+import { normalizarCores } from "@/dominio/relatorio";
 import { Aviso, Cartao, LinkBotao, Selo, Tabela, Vazio } from "@/componentes/ui";
 import {
   criarRelatorioAcao, emitirRelatorioAcao, enviarFotoAcao, excluirRelatorioAcao, moverFotoAcao, reabrirRelatorioAcao, removerFotoAcao,
-  salvarFotoAcao, salvarTextosAcao,
+  salvarCoresAcao, salvarFotoAcao, salvarTextosAcao,
 } from "../relatorios/acoes";
 
-export async function VistaRelatorio({ obraId, u, sp, base, inicioObra, semanaAtual, nSemanas }: {
-  obraId: string; u: UsuarioSessao; sp: Record<string, string | undefined>; base: string; inicioObra: string; semanaAtual: number; nSemanas: number;
+export async function VistaRelatorio({ obraId, u, sp, base, inicioObra, semanaAtual, nSemanas, cores }: {
+  obraId: string; u: UsuarioSessao; sp: Record<string, string | undefined>; base: string; inicioObra: string; semanaAtual: number; nSemanas: number; cores: unknown;
 }) {
   if (!temPermissao(u, "relatorios")) return <Aviso tom="alerta">Seu perfil não tem acesso aos relatórios semanais.</Aviso>;
   const podeCriar = temPermissao(u, "relatorios", "criar");
@@ -37,6 +39,7 @@ export async function VistaRelatorio({ obraId, u, sp, base, inicioObra, semanaAt
           <h2 className="text-lg font-semibold">Relatório da semana {r.semana} · {formatarData(d.data)}</h2>
           <Selo tom={rascunho ? "amarelo" : "verde"}>{rascunho ? (r.versao ? `Em revisão (v${r.versao + 1})` : "Rascunho") : `Emitido · v${r.versao}`}</Selo>
           <div className="ml-auto flex flex-wrap gap-2">
+            {rascunho && <LinkBotao href={`${base}&vista=relatorio#cores`} variante="fantasma">Cores</LinkBotao>}
             <LinkBotao href={`/api/relatorios/${r.id}/pdf`} target="_blank" variante={rascunho ? "secundario" : "primario"}>{rascunho ? "Ver prévia do PDF" : "Baixar PDF"}</LinkBotao>
             {rascunho && podeEmitir && (
               <AcaoConfirmada acao={emitirRelatorioAcao.bind(null, obraId, r.id)} variante="secundario"
@@ -123,6 +126,9 @@ export async function VistaRelatorio({ obraId, u, sp, base, inicioObra, semanaAt
           ) : <p className="text-sm text-suave">Todas as semanas até a próxima já têm relatório.</p>}
         </Cartao>
       )}
+      <div id="cores" className="scroll-mt-4"><Cartao titulo="Cores do relatório desta obra">
+        <CoresRelatorioEditor atual={normalizarCores(cores)} editavel={podeEmitir} salvar={salvarCoresAcao.bind(null, obraId)} />
+      </Cartao></div>
       <Cartao titulo="Relatórios da obra" semPadding>
         {lista.length === 0 ? <Vazio titulo="Nenhum relatório ainda">Crie o relatório da semana para enviar ao cliente.</Vazio> : (
           <Tabela>

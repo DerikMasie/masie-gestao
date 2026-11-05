@@ -38,3 +38,19 @@ describe("relatório — textos sugeridos", () => {
       .toBe("Avanço físico de 64,5% (previsto 67%), 2,5 pontos atrás do previsto. Término previsto pelo cronograma: 11/12/2026; término contratual: 15/01/2027.");
   });
 });
+
+import { avisosCores, CORES_PADRAO, escurecer, normalizarCores, PALETAS, textoSobre } from "@/dominio/relatorio";
+
+describe("cores do relatório por obra", () => {
+  it("normaliza e completa com o padrão Masie", () => {
+    expect(normalizarCores(null)).toEqual(CORES_PADRAO);
+    expect(normalizarCores({ principal: "#1F2937", destaque: "azul", fundo: "#fff" })).toEqual({ principal: "#1f2937", destaque: CORES_PADRAO.destaque, fundo: CORES_PADRAO.fundo });
+  });
+  it("texto automático sobre a cor principal e avisos de legibilidade", () => {
+    expect(textoSobre("#161616")).toBe("#ffffff");
+    expect(textoSobre("#f2d468")).toBe("#161616");
+    expect(escurecer("#ffffff", 0.5)).toBe("#808080");
+    for (const p of PALETAS) expect(avisosCores(p.cores)).toEqual([]);
+    expect(avisosCores({ principal: "#f2d468", destaque: "#000000", fundo: "#333333" })).toHaveLength(2);
+  });
+});
