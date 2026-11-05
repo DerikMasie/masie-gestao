@@ -72,3 +72,35 @@
 - Testes unitários: limites do ritmo e todas as pendências.
 - Teste de integração: obra Palco em "Atenção −2,5 p.p.", obra sem planilha, obra concluída fora do painel e acesso restrito por obra.
 - Ponta a ponta: `tests/e2e/painel.cjs` (filtro, detalhe, link da pendência, celular).
+
+## Visão por engenheiro e modo TV (06/11/2026)
+
+Inspirada no modelo enviado pelo cliente: fundo escuro, estilo "sala de controle". É a **visão padrão** da tela inicial; o botão "Cartões e pendências" alterna para a visão de cartões.
+
+**Topo** (as obras canceladas ficam de fora):
+- obras em execução (em andamento);
+- obras aguardando (contratadas e paralisadas);
+- total de obras;
+- receita total;
+- receita aguardando;
+- receita em andamento.
+
+Receita = valor de contrato.
+
+**Uma linha por engenheiro** (responsável técnico da obra; sem ele, o gestor; sem nenhum, "Sem responsável"):
+- **Barras por situação:** prospecção, orçamento, contratada, andamento, paralisada e concluída.
+- **Obras do engenheiro:** valor de contrato e % realizado. A cor da barra segue o ritmo: atrasada, atenção, no ritmo, adiantada ou sem cronograma.
+- **Medidor de carga** (obras ativas): verde até 3, amarelo até 6, vermelho acima, em escala até 10.
+- **Participação na receita total**, em destaque amarelo, e o valor total das obras do engenheiro.
+
+**Modo TV:** `/painel-tv`.
+- Tela cheia, sem menu, para a TV do escritório.
+- Recarrega sozinho a cada 5 minutos e mostra a hora da atualização.
+- Exige login de um perfil com acesso a valores.
+
+**Responsividade:** em telas médias, cada engenheiro ocupa 2 linhas; em telas largas e na TV, uma linha.
+
+**Implementação:**
+- regras: `src/dominio/painel-engenheiros.ts`;
+- dados: `src/servicos/painel-engenheiros.ts`;
+- tela: `src/componentes/painel-engenheiros.tsx`.

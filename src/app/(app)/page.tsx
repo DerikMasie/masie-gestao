@@ -5,6 +5,10 @@ import { exigirPermissaoPagina, temPermissao } from "@/lib/auth/atual";
 import { minhasTarefas } from "@/servicos/quadros";
 import { painelFinanceiro } from "@/servicos/financeiro";
 import { painelObras } from "@/servicos/painel-obras";
+import { painelEngenheiros } from "@/servicos/painel-engenheiros";
+import { PainelEngenheiros } from "@/componentes/painel-engenheiros";
+import clsx from "clsx";
+import { Monitor } from "lucide-react";
 import { hojeIso } from "@/dominio/calendario";
 import { situacaoCartao } from "@/dominio/quadro";
 import { PainelObras } from "@/componentes/painel-obras";
@@ -21,8 +25,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const verFin = temPermissao(u, "financeiro");
   // Valores (cobrança, saldo, fornecedores) só para quem vê medições e orçamentos.
   const verValores = temPermissao(u, "medicoes") && temPermissao(u, "orcamentos");
-  const [cartoes, tarefas, fin] = await Promise.all([
+  const visao = p.visao === "cartoes" || !verValores ? "cartoes" : "engenheiros";
+  const [cartoes, eng, tarefas, fin] = await Promise.all([
     painelObras(db, acesso, hoje),
+    visao === "engenheiros" ? painelEngenheiros(db, acesso) : Promise.resolve(null),
     verQuadro ? minhasTarefas(db, u.empresaId, u.id) : Promise.resolve([]),
     verFin ? painelFinanceiro(db, u.empresaId) : Promise.resolve(null),
   ]);
@@ -36,7 +42,19 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       />
       {p.senha === "alterada" && <div className="mb-4"><Aviso tom="sucesso">Senha alterada com sucesso.</Aviso></div>}
 
-      <PainelObras cartoes={cartoes} verValores={verValores} hoje={hoje} />
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="inline-flex rounded-lg border border-borda bg-white p-0.5 text-sm" role="tablist" aria-label="Visão do painel">
+          {verValores && <Link href="/?visao=engenheiros" role="tab" aria-selected={visao === "engenheiros"} className={clsx("rounded-md px-3 py-1.5 font-medium", visao === "engenheiros" ? "bg-marca text-white" : "text-suave hover:text-texto")}>Por engenheiro</Link>}
+          <Link href="/?visao=cartoes" role="tab" aria-selected={visao === "cartoes"} className={clsx("rounded-md px-3 py-1.5 font-medium", visao === "cartoes" ? "bg-marca text-white" : "text-suave hover:text-texto")}>Cartões e pendências</Link>
+        </div>
+        {verValores && <Link href="/painel-tv" target="_blank" className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-borda bg-white px-3 py-1.5 text-sm hover:bg-zinc-50"><Monitor className="size-4" /> Modo TV</Link>}
+      </div>
+
+      {visao === "engenheiros" && eng ? (
+        <PainelEngenheiros resumo={eng.resumo} grupos={eng.grupos} ritmos={Object.fromEntries(cartoes.map((c) => [c.id, { ritmo: c.ritmo, realizado: c.realizado }]))} />
+      ) : (
+        <PainelObras cartoes={cartoes} verValores={verValores} hoje={hoje} />
+      )}
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
         {verQuadro && (
