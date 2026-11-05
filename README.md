@@ -12,6 +12,7 @@ Sistema web de gestão de obras, orçamento, planejamento e financeiro da **Masi
 - Publicação (Vercel + Neon): [`docs/08-publicacao-vercel.md`](docs/08-publicacao-vercel.md)
 - Medições, contrato e Gerencial (Item 1, passo 1.3): [`docs/09-entrega-medicoes.md`](docs/09-entrega-medicoes.md)
 - Relatório semanal em PDF com relatório fotográfico (Item 1, passo 1.4): [`docs/10-entrega-relatorio-semanal.md`](docs/10-entrega-relatorio-semanal.md)
+- Painel de obras (tela inicial): [`docs/11-painel-de-obras.md`](docs/11-painel-de-obras.md)
 
 ## Stack
 
