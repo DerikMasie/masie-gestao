@@ -6,6 +6,7 @@ import {
 } from "@/db/schema";
 import { gerarSemanas, semanasFaltantes } from "@/dominio/calendario";
 import { proximoCodigoObra, type SituacaoObra } from "@/dominio/obra";
+import { exibirNoRelatorioPadrao } from "@/dominio/eap";
 import type { DadosObra } from "@/lib/validacao";
 import { auditarEdicao, registrarAuditoria } from "./auditoria";
 import { type Contexto, ErroNegocio, violacaoUnica } from "./contexto";
@@ -69,7 +70,7 @@ export async function criarObra(banco: BancoDados, ctx: Contexto, d: DadosObra) 
       const etapas = await tx.select().from(etapaPadrao)
         .where(and(eq(etapaPadrao.empresaId, ctx.empresaId), eq(etapaPadrao.ativo, true))).orderBy(asc(etapaPadrao.ordem));
       if (etapas.length) {
-        await tx.insert(obraEtapa).values(etapas.map((e, i) => ({ obraId: nova.id, etapaPadraoId: e.id, ordem: i + 1, nome: e.nome, tipo: e.tipo })));
+        await tx.insert(obraEtapa).values(etapas.map((e, i) => ({ obraId: nova.id, etapaPadraoId: e.id, ordem: i + 1, nome: e.nome, tipo: e.tipo, exibirNoRelatorio: exibirNoRelatorioPadrao(e.nome, e.tipo) })));
       }
 
       const semanas = gerarSemanas(d.dataInicio, d.dataFimContratual);

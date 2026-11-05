@@ -189,6 +189,8 @@ export const obra = pgTable("obra", {
   dataConclusao: date({ mode: "string" }),
   valorContratoOriginal: dinheiro().notNull().default("0"),
   percentualEntrada: percentual().notNull().default("0"),
+  /** Período de fechamento da medição, em semanas (1 a 4). Padrão: quinzenal (2). */
+  semanasPorMedicao: integer().notNull().default(2),
   /** Provisório na Fase 2: na Fase 3 passa a ser derivado do orçamento-base aprovado. */
   orcamentoCustoAprovado: dinheiro().notNull().default("0"),
   margemPrevista: percentual(),
@@ -227,6 +229,8 @@ export const obraEtapa = pgTable("obra_etapa", {
   ordem: integer().notNull(),
   nome: text().notNull(),
   tipo: tipoEtapa().notNull(),
+  /** Aparece em "Evolução por tipo de serviço" no relatório semanal. */
+  exibirNoRelatorio: boolean().notNull().default(true),
   criadoEm: criadoEm(),
 }, (t) => [uniqueIndex("obra_etapa_ordem_uq").on(t.obraId, t.ordem)]);
 
@@ -549,3 +553,44 @@ export const lancamento = pgTable("lancamento", {
   index("lancamento_cc_idx").on(t.centroCustoId, t.data),
   index("lancamento_conta_idx").on(t.contaId),
 ]);
+
+// ───────────────────────────── Gestão da obra: planilha e físico (Item 1) ─────────────────────────────
+
+/**
+ * Planilha da obra = colunas da esquerda da aba "Realizado-Físico": serviço, fornecedor, MO acertada,
+ * MO verba, valor cliente e duração. Valores em double, como na planilha (ex.: 176,350625).
+ */
+export const obraServico = pgTable("obra_servico", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  etapaId: uuid().notNull().references(() => obraEtapa.id),
+  ordem: integer().notNull(),
+  descricao: text().notNull(),
+  fornecedorId: uuid().references(() => fornecedor.id),
+  /** Valor proposto ao prestador (MO acertada); nulo = ainda não acertado. */
+  maoDeObraAcertada: doublePrecision(),
+  /** Custo orçado (verba) do serviço. */
+  maoDeObraVerba: doublePrecision().notNull().default(0),
+  /** Preço de venda ao cliente — base da medição. */
+  valorCliente: doublePrecision().notNull().default(0),
+  /** Peso do serviço no avanço físico (decisão do cliente: avanço ponderado pela duração). */
+  duracaoDias: doublePrecision().notNull().default(1),
+  /** Curva ABC informada; nulo = calculada pela verba. */
+  curvaAbc: text(),
+  orcamentoItemId: uuid().references(() => orcamentoItem.id, { onDelete: "set null" }),
+  observacao: text(),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [index("obra_servico_obra_idx").on(t.obraId, t.etapaId, t.ordem)]);
+
+/** Percentual previsto e realizado de cada serviço em cada semana da obra (abas "Previsto físico" e "Realizado-Físico"). */
+export const obraServicoSemana = pgTable("obra_servico_semana", {
+  servicoId: uuid().notNull().references(() => obraServico.id, { onDelete: "cascade" }),
+  semana: integer().notNull(),
+  /** Fração do serviço prevista para a semana (0.25 = 25%). */
+  previsto: doublePrecision(),
+  /** Fração do serviço executada na semana. */
+  realizado: doublePrecision(),
+  atualizadoPor: uuid().references(() => usuario.id),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [primaryKey({ columns: [t.servicoId, t.semana] })]);

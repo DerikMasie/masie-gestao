@@ -16,10 +16,12 @@ import { AuditoriaLista } from "@/componentes/auditoria-lista";
 import { AcaoConfirmada, BotaoEnviar, Caixa, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
 import { BarraPrazo, SeloPrazo, SeloSituacao } from "@/componentes/rotulos";
 import { Abas, Aviso, CabecalhoPagina, Cartao, Dl, Indicador, LinkBotao, Selo, Tabela } from "@/componentes/ui";
+import { AbaFisico } from "./fisico/aba";
 import { anexarAcao, desvincularAcao, excluirObraAcao, removerAnexoAcao, vincularAcao } from "../acoes";
 
 const ABAS = [
   { id: "resumo", rotulo: "Resumo" },
+  { id: "fisico", rotulo: "Gestão da obra" },
   { id: "orcamento", rotulo: "Orçamento" },
   { id: "financeiro", rotulo: "Financeiro" },
   { id: "estrutura", rotulo: "Estrutura" },
@@ -36,14 +38,15 @@ function tamanho(b: number) {
 
 export const metadata = { title: "Obra" };
 
-export default async function PaginaObra({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ aba?: string; criada?: string; salva?: string }> }) {
+export default async function PaginaObra({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { id } = await params;
   const sp = await searchParams;
   const u = await exigirPermissaoPagina("obras");
   const dados = /^[0-9a-f-]{36}$/.test(id) ? await obterObra(db, u.empresaId, id) : null;
   if (!dados || !(await podeAcessarObra(u, id))) notFound();
   const { obra: o } = dados;
-  const aba = ABAS.some((a) => a.id === sp.aba) ? sp.aba! : "resumo";
+  const abas = ABAS.filter((a) => a.id !== "fisico" || temPermissao(u, "planejamento"));
+  const aba = abas.some((a) => a.id === sp.aba) ? sp.aba! : "resumo";
   const podeEditar = temPermissao(u, "obras", "editar");
   const base = `/obras/${id}`;
 
@@ -61,7 +64,9 @@ export default async function PaginaObra({ params, searchParams }: { params: Pro
       />
       {sp.criada && <div className="mb-4"><Aviso tom="sucesso">Obra cadastrada. A estrutura operacional foi gerada — veja a aba <Link className="underline" href={`${base}?aba=estrutura`}>Estrutura</Link>.</Aviso></div>}
       {sp.salva && <div className="mb-4"><Aviso tom="sucesso">Alterações salvas e registradas no histórico.</Aviso></div>}
-      <Abas abas={ABAS} ativa={aba} base={base} />
+      <Abas abas={abas} ativa={aba} base={base} />
+
+      {aba === "fisico" && <AbaFisico obraId={id} u={u} sp={sp} />}
 
       {aba === "resumo" && (
         <div className="space-y-6">

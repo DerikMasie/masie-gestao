@@ -8,6 +8,7 @@ Sistema web de gestão de obras, orçamento, planejamento e financeiro da **Masi
 - Identidade visual e Quadro de atividades: [`docs/04-entrega-identidade-e-quadro.md`](docs/04-entrega-identidade-e-quadro.md)
 - Orçamentos (Fase 3, parte 1): [`docs/05-entrega-orcamentos.md`](docs/05-entrega-orcamentos.md)
 - Financeiro, notas fiscais e verba (Fase 3, parte 2): [`docs/06-entrega-financeiro.md`](docs/06-entrega-financeiro.md)
+- Gestão da obra — planilha, previsto/realizado físico e avanço (Item 1, passos 1.1 e 1.2): [`docs/07-entrega-gestao-obra.md`](docs/07-entrega-gestao-obra.md)
 
 ## Stack
 
@@ -39,6 +40,7 @@ node tests/e2e/fluxo-fase2.cjs   # ponta a ponta no navegador (ver cabeçalho do
 node tests/e2e/quadro.cjs        # Quadro de atividades (rodar depois do anterior)
 FIXTURE=tests/fixtures/orcamento-padrao-preenchido.xlsx node tests/e2e/orcamento.cjs   # Orçamentos
 node tests/e2e/financeiro.cjs    # Financeiro e notas fiscais (FINANCEIRO=arquivo.xlsm para testar a importação)
+PLANILHA=ControlePalco.xlsm node tests/e2e/gestao-obra.cjs   # Gestão da obra (físico) na obra 2026-0001
 ```
 
 ## Produção

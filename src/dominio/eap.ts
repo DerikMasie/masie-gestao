@@ -51,3 +51,13 @@ export function etapaDoSubitem(subitem: string): string | null {
   const n = normalizarNome(subitem);
   return EAP_UNICA.find((e) => e.subitens.some((s) => normalizarNome(s) === n))?.nome ?? null;
 }
+
+/**
+ * Etapas que aparecem em "Evolução por tipo de serviço" do relatório semanal (padrão da Masie: etapas de contrato
+ * de 1 a 15 + Aditivos). Aluguel de equipamentos, Serviços adicionais e Faturamento direto ficam de fora, mas
+ * podem ser ligadas por obra; categorias novas criadas durante a obra aparecem por padrão.
+ */
+const FORA_DO_RELATORIO = new Set(["aluguel de equipamentos", "servicos adicionais"].map(normalizarNome));
+export function exibirNoRelatorioPadrao(nome: string, tipo: TipoEtapa): boolean {
+  return tipo !== "FATURAMENTO_DIRETO" && !FORA_DO_RELATORIO.has(chaveEtapa(nome));
+}

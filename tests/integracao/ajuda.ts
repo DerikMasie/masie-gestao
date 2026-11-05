@@ -11,7 +11,7 @@ if (!/test/.test(url)) throw new Error("TEST_DATABASE_URL deve apontar para um b
 export const db = criarBanco(url);
 
 export async function limparBanco() {
-  await db.execute(sql`truncate table auditoria, anexo, lancamento, titulo_parcela, titulo, nota_fiscal, importacao, plano_conta, conta_financeira, orcamento_item, cartao_comentario, cartao_checklist, cartao_etiqueta, cartao, etiqueta, quadro_coluna, quadro, orcamento, usuario_obra, obra_semana, obra_etapa, centro_custo, obra,
+  await db.execute(sql`truncate table auditoria, anexo, obra_servico_semana, obra_servico, lancamento, titulo_parcela, titulo, nota_fiscal, importacao, plano_conta, conta_financeira, orcamento_item, cartao_comentario, cartao_checklist, cartao_etiqueta, cartao, etiqueta, quadro_coluna, quadro, orcamento, usuario_obra, obra_semana, obra_etapa, centro_custo, obra,
     fornecedor, cliente, etapa_padrao, sessao, tentativa_login, usuario, perfil, empresa restart identity cascade`);
 }
 

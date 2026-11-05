@@ -1,0 +1,1700 @@
+{
+ "origem": "ControlePalco.xlsm (valores calculados pelo Excel)",
+ "inicio": "2026-10-09",
+ "etapas": [
+  {
+   "ordem": 1,
+   "nome": "SERVIÇOS INICIAIS",
+   "semanal": [
+    0.062,
+    0.004,
+    0.004,
+    0.004,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 2,
+   "nome": "PROTEÇÕES",
+   "semanal": [
+    0,
+    0,
+    0,
+    0.015,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 3,
+   "nome": "REMOÇÕES E DEMOLIÇÕES",
+   "semanal": [
+    0,
+    0,
+    0.04,
+    0.006,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 4,
+   "nome": "ESTRUTURA",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 5,
+   "nome": "COBERTURA",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 6,
+   "nome": "ALVENARIA / REBOCO / CONTRAPISO",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 7,
+   "nome": "IMPERMEABILIZAÇÃO",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 8,
+   "nome": "INSTALAÇÕES HIDRÁULICAS/GÁS",
+   "semanal": [
+    0,
+    0.08,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 9,
+   "nome": "INSTALAÇÕES ELÉTRICAS",
+   "semanal": [
+    0.085,
+    0.115,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 10,
+   "nome": "INSTALAÇÃO DE AR CONDICIONADO",
+   "semanal": [
+    0,
+    0.02,
+    0.08,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 11,
+   "nome": "ESQUADRIAS",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 12,
+   "nome": "GESSO",
+   "semanal": [
+    0,
+    0.04,
+    0.04,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 13,
+   "nome": "REVESTIMENTOS",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 14,
+   "nome": "PINTURA",
+   "semanal": [
+    0,
+    0,
+    0,
+    0.05,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 15,
+   "nome": "SERVIÇOS FINAIS",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 16,
+   "nome": "ALUGUEL DE EQUIPAMENTOS",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "ordem": 17,
+   "nome": "ADITIVOS",
+   "semanal": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ ],
+ "servicos": [
+  {
+   "linha": 7,
+   "etapa": 1,
+   "nome": "Emissão de ART",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": null,
+   "cliente": 176.35062499999998,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 8,
+   "etapa": 1,
+   "nome": "Gerenciamento de obra por equipe de engenharia + apoio administrativo de escritório",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": null,
+   "cliente": 9025.55,
+   "duracao": 1,
+   "realizado": {
+    "1": 0.1,
+    "2": 0.2,
+    "3": 0.2,
+    "4": 0.2
+   },
+   "previsto": {
+    "1": 0.1,
+    "2": 0.1,
+    "3": 0.1,
+    "4": 0.1,
+    "5": 0.1,
+    "6": 0.1,
+    "7": 0.1,
+    "8": 0.1,
+    "9": 0.1,
+    "10": 0.1
+   }
+  },
+  {
+   "linha": 9,
+   "etapa": 1,
+   "nome": "Seguro de obra (~0,5% do valor total da obra) (se tiver reforço, valor maior)",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": null,
+   "cliente": 961.9124999999999,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 10,
+   "etapa": 1,
+   "nome": "Plotagem de projetos",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": null,
+   "cliente": 240.48,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 45,
+   "etapa": 2,
+   "nome": "Proteção de piso",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 600,
+   "cliente": 961.9,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.25
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 46,
+   "etapa": 2,
+   "nome": "Materiais de proteção",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 1720.4,
+   "cliente": 2099.1,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.5
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 79,
+   "etapa": 3,
+   "nome": "Remoção de dutos dos forros",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 850,
+   "cliente": 1362.709375,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 80,
+   "etapa": 3,
+   "nome": "Remoção de espelhos",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 450,
+   "cliente": 721.4343749999999,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 81,
+   "etapa": 3,
+   "nome": "Remoção de Entulhos",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 500,
+   "cliente": 801.5937499999999,
+   "duracao": 1,
+   "realizado": {
+    "3": 0.5,
+    "4": 0.15
+   },
+   "previsto": {
+    "1": 0.2,
+    "2": 0.2,
+    "3": 0.2,
+    "4": 0.2,
+    "5": 0.2
+   }
+  },
+  {
+   "linha": 82,
+   "etapa": 3,
+   "nome": "Material de remoções e demolições",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 2400,
+   "cliente": 2928.3,
+   "duracao": 1,
+   "realizado": {
+    "3": 0.5,
+    "4": 0.15
+   },
+   "previsto": {
+    "1": 0.2,
+    "2": 0.2,
+    "3": 0.2,
+    "4": 0.2,
+    "5": 0.2
+   }
+  },
+  {
+   "linha": 224,
+   "etapa": 8,
+   "nome": "Derivação de pontos de água fria ",
+   "fornecedor": "Emerson",
+   "acertada": 500,
+   "verba": 450,
+   "cliente": 721.4343749999999,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "1": 0.5,
+    "2": 0.5
+   }
+  },
+  {
+   "linha": 225,
+   "etapa": 8,
+   "nome": "Derivação de esgoto",
+   "fornecedor": "emerson",
+   "acertada": 500,
+   "verba": 300,
+   "cliente": 480.95624999999995,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "1": 0.5,
+    "2": 0.5
+   }
+  },
+  {
+   "linha": 226,
+   "etapa": 8,
+   "nome": "Caixa de gordura",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 150,
+   "cliente": 240.47812499999998,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "1": 0.5,
+    "2": 0.5
+   }
+  },
+  {
+   "linha": 227,
+   "etapa": 8,
+   "nome": "Instalação de Tanque",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 100,
+   "cliente": 160.31875,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 228,
+   "etapa": 8,
+   "nome": "Instalação de filtro",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 100,
+   "cliente": 160.31875,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 229,
+   "etapa": 8,
+   "nome": "Instalação de caixa de gordura",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 100,
+   "cliente": 160.31875,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 230,
+   "etapa": 8,
+   "nome": "Acessórios",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 200,
+   "cliente": 320.6375,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 231,
+   "etapa": 8,
+   "nome": "Material de hidráulica",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 650,
+   "cliente": 793.08,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 259,
+   "etapa": 9,
+   "nome": "Tomadas de piso",
+   "fornecedor": "Everton",
+   "acertada": 1425.3773057574065,
+   "verba": 1700,
+   "cliente": 2725.41875,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 260,
+   "etapa": 9,
+   "nome": "Tomada parede (baixa/média/alta)",
+   "fornecedor": "Everton",
+   "acertada": 2431.525992174399,
+   "verba": 2900,
+   "cliente": 4649.24375,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 261,
+   "etapa": 9,
+   "nome": "Interruptor",
+   "fornecedor": "Everton",
+   "acertada": 335.3828954723309,
+   "verba": 400,
+   "cliente": 641.275,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 262,
+   "etapa": 9,
+   "nome": "Ponto de iluminação marcenaria",
+   "fornecedor": "Everton",
+   "acertada": 670.7657909446618,
+   "verba": 800,
+   "cliente": 1282.55,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 263,
+   "etapa": 9,
+   "nome": "Ponto de iluminação luminárias",
+   "fornecedor": "Everton",
+   "acertada": 1341.5315818893237,
+   "verba": 1600,
+   "cliente": 2565.1,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 264,
+   "etapa": 9,
+   "nome": "Ponto de ar",
+   "fornecedor": "Everton",
+   "acertada": 335.3828954723309,
+   "verba": 400,
+   "cliente": 641.275,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 265,
+   "etapa": 9,
+   "nome": "Ponto de camera",
+   "fornecedor": "Everton",
+   "acertada": 2515.3717160424817,
+   "verba": 3000,
+   "cliente": 4809.5625,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 266,
+   "etapa": 9,
+   "nome": "Adequação de quadro de distribuição ",
+   "fornecedor": "Everton",
+   "acertada": 1341.5315818893237,
+   "verba": 1600,
+   "cliente": 2565.1,
+   "duracao": 1,
+   "realizado": {
+    "1": 0.25,
+    "2": 0.75
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 267,
+   "etapa": 9,
+   "nome": "Passagem de cabeamento lógico/TV",
+   "fornecedor": "Everton",
+   "acertada": 1089.9944102850754,
+   "verba": 1300,
+   "cliente": 2084.1437499999997,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "2": 1
+   }
+  },
+  {
+   "linha": 268,
+   "etapa": 9,
+   "nome": "Instalação de acabamentos de tomadas e interruptores novos",
+   "fornecedor": "Everton",
+   "acertada": 419.2286193404137,
+   "verba": 500,
+   "cliente": 801.5937499999999,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 269,
+   "etapa": 9,
+   "nome": "Instalação de luminárias",
+   "fornecedor": "Everton",
+   "acertada": 1341.5315818893237,
+   "verba": 1600,
+   "cliente": 2565.1,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 270,
+   "etapa": 9,
+   "nome": "Perfil de Led",
+   "fornecedor": "Everton",
+   "acertada": 1752.375628842929,
+   "verba": 2090,
+   "cliente": 3350.6618749999993,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 271,
+   "etapa": 9,
+   "nome": "Material de elétrica",
+   "fornecedor": null,
+   "acertada": 5215.96,
+   "verba": 13500,
+   "cliente": 16471.6875,
+   "duracao": 1,
+   "realizado": {
+    "1": 1
+   },
+   "previsto": {
+    "1": 1
+   }
+  },
+  {
+   "linha": 300,
+   "etapa": 10,
+   "nome": "Infra para aparelho de ar condicionado cassete 9000 e 12000",
+   "fornecedor": "Danilo",
+   "acertada": 1500,
+   "verba": 2400,
+   "cliente": 3847.6499999999996,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "4": 1
+   }
+  },
+  {
+   "linha": 301,
+   "etapa": 10,
+   "nome": "Infra para aparelho de ar condicionado cassete 18000",
+   "fornecedor": "Danilo",
+   "acertada": 1500,
+   "verba": 900,
+   "cliente": 1442.8687499999999,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "4": 1
+   }
+  },
+  {
+   "linha": 302,
+   "etapa": 10,
+   "nome": "Infra para aparelho de ar condicionado cassete 24000",
+   "fornecedor": "Danilo",
+   "acertada": 1500,
+   "verba": 1000,
+   "cliente": 1603.1874999999998,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "4": 1
+   }
+  },
+  {
+   "linha": 303,
+   "etapa": 10,
+   "nome": "Infra para aparelho de ar condicionado cassete 30000",
+   "fornecedor": "Danilo",
+   "acertada": 1500,
+   "verba": 3300,
+   "cliente": 5290.51875,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "4": 1
+   }
+  },
+  {
+   "linha": 304,
+   "etapa": 10,
+   "nome": "Material de ar condicionado",
+   "fornecedor": "Frigelar",
+   "acertada": 11117.31,
+   "verba": 6800,
+   "cliente": 8296.85,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "4": 1
+   }
+  },
+  {
+   "linha": 328,
+   "etapa": 11,
+   "nome": "Instalação de porta DML ",
+   "fornecedor": null,
+   "acertada": 1150,
+   "verba": 1000,
+   "cliente": 1603.19,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "6": 1
+   }
+  },
+  {
+   "linha": 349,
+   "etapa": 12,
+   "nome": "Troca de placas mineral",
+   "fornecedor": "Paulo",
+   "acertada": 638,
+   "verba": 500,
+   "cliente": 782,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "3": 0.5,
+    "4": 0.5
+   }
+  },
+  {
+   "linha": 350,
+   "etapa": 12,
+   "nome": "Reparos dos dutos",
+   "fornecedor": "Paulo",
+   "acertada": 638,
+   "verba": 1100,
+   "cliente": 1763.5062499999997,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "3": 0.5,
+    "4": 0.5
+   }
+  },
+  {
+   "linha": 351,
+   "etapa": 12,
+   "nome": "Reforço divisórias",
+   "fornecedor": "Paulo",
+   "acertada": 638,
+   "verba": 3586.9999999999995,
+   "cliente": 5750.633562499999,
+   "duracao": 1,
+   "realizado": {
+    "3": 1
+   },
+   "previsto": {
+    "4": 0.5,
+    "5": 0.5
+   }
+  },
+  {
+   "linha": 352,
+   "etapa": 12,
+   "nome": "Montagem de estrutura e plaqueamento",
+   "fornecedor": "Paulo",
+   "acertada": 638,
+   "verba": 704.73,
+   "cliente": 1102,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "5": 1
+   }
+  },
+  {
+   "linha": 353,
+   "etapa": 12,
+   "nome": "Material de drywall/reforço",
+   "fornecedor": "Paulo",
+   "acertada": 638,
+   "verba": 3752.2,
+   "cliente": 4578.15,
+   "duracao": 1,
+   "realizado": {
+    "2": 1
+   },
+   "previsto": {
+    "3": 1
+   }
+  },
+  {
+   "linha": 430,
+   "etapa": 14,
+   "nome": "Massa corrida em duas demãos lixadas em tetos",
+   "fornecedor": "Matias",
+   "acertada": 875,
+   "verba": 645,
+   "cliente": 1034.06,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.5
+   },
+   "previsto": {
+    "6": 0.3,
+    "7": 0.7
+   }
+  },
+  {
+   "linha": 431,
+   "etapa": 14,
+   "nome": "Massa corrida em duas demãos lixadas em paredes",
+   "fornecedor": "Matias",
+   "acertada": 875,
+   "verba": 3180,
+   "cliente": 5098.14,
+   "duracao": 1,
+   "realizado": {
+    "4": 1
+   },
+   "previsto": {
+    "7": 0.7,
+    "8": 0.3
+   }
+  },
+  {
+   "linha": 432,
+   "etapa": 14,
+   "nome": "Pintura tinta acrílica (incluso até 3 testes para cada cor, até 3 cores) em tetos",
+   "fornecedor": "Matias",
+   "acertada": 875,
+   "verba": 645,
+   "cliente": 1034.06,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.25
+   },
+   "previsto": {
+    "8": 1
+   }
+  },
+  {
+   "linha": 433,
+   "etapa": 14,
+   "nome": "Pintura tinta acrílica (incluso até 3 testes para cada cor, até 3 cores) em paredes",
+   "fornecedor": "Matias",
+   "acertada": 875,
+   "verba": 3180,
+   "cliente": 5098.14,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.25
+   },
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 434,
+   "etapa": 14,
+   "nome": "Materiais de pintura",
+   "fornecedor": null,
+   "acertada": 1401,
+   "verba": 3652.7,
+   "cliente": 4456.75,
+   "duracao": 1,
+   "realizado": {
+    "4": 0.5
+   },
+   "previsto": {
+    "6": 1
+   }
+  },
+  {
+   "linha": 478,
+   "etapa": 15,
+   "nome": "Limpeza bruta de obra",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 3800,
+   "cliente": 6092.11,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 479,
+   "etapa": 15,
+   "nome": "Colagem de sinalizações",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 1000,
+   "cliente": 1603.19,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "10": 1
+   }
+  },
+  {
+   "linha": 480,
+   "etapa": 15,
+   "nome": "Material de serviços finais",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 750,
+   "cliente": 915.09,
+   "duracao": 1,
+   "realizado": {},
+   "previsto": {
+    "9": 1
+   }
+  },
+  {
+   "linha": 552,
+   "etapa": 17,
+   "nome": "Reembolsos",
+   "fornecedor": null,
+   "acertada": null,
+   "verba": 0,
+   "cliente": 0,
+   "duracao": 0,
+   "realizado": {},
+   "previsto": {}
+  }
+ ],
+ "esperado": {
+  "realizadoSemanal": [
+   0.147,
+   0.259,
+   0.164,
+   0.075
+  ],
+  "realizadoAcumulado": 0.645,
+  "previstoSemanal": [
+   0.22,
+   0.22,
+   0.05,
+   0.14,
+   0.04,
+   0.048,
+   0.03,
+   0.028,
+   0.202,
+   0.022
+  ],
+  "totalCliente": 128861.67981249998,
+  "totalVerba": 81857.03,
+  "totalAcertada": 47574.27,
+  "duracaoTotal": 50
+ }
+}
