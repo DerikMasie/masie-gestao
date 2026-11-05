@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  serverExternalPackages: ["@node-rs/argon2"],
+  serverExternalPackages: ["@node-rs/argon2", "@react-pdf/renderer"],
   experimental: { serverActions: { bodySizeLimit: "25mb" } },
   poweredByHeader: false,
   async headers() {

@@ -11,6 +11,7 @@ Sistema web de gestão de obras, orçamento, planejamento e financeiro da **Masi
 - Gestão da obra — planilha, previsto/realizado físico e avanço (Item 1, passos 1.1 e 1.2): [`docs/07-entrega-gestao-obra.md`](docs/07-entrega-gestao-obra.md)
 - Publicação (Vercel + Neon): [`docs/08-publicacao-vercel.md`](docs/08-publicacao-vercel.md)
 - Medições, contrato e Gerencial (Item 1, passo 1.3): [`docs/09-entrega-medicoes.md`](docs/09-entrega-medicoes.md)
+- Relatório semanal em PDF com relatório fotográfico (Item 1, passo 1.4): [`docs/10-entrega-relatorio-semanal.md`](docs/10-entrega-relatorio-semanal.md)
 
 ## Stack
 
@@ -44,6 +45,7 @@ FIXTURE=tests/fixtures/orcamento-padrao-preenchido.xlsx node tests/e2e/orcamento
 node tests/e2e/financeiro.cjs    # Financeiro e notas fiscais (FINANCEIRO=arquivo.xlsm para testar a importação)
 PLANILHA=ControlePalco.xlsm node tests/e2e/gestao-obra.cjs   # Gestão da obra (físico) na obra 2026-0001
 node tests/e2e/medicoes.cjs      # Medições e Gerencial (depois do anterior)
+FOTOS=pasta-com-jpgs node tests/e2e/relatorio.cjs   # Relatório semanal + PDF
 ```
 
 ## Produção / versão de testes (Vercel + Neon)

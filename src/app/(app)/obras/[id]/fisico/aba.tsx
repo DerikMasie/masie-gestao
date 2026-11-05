@@ -9,6 +9,7 @@ import { listarFornecedores } from "@/servicos/cadastros";
 import { carregarFisico } from "@/servicos/fisico";
 import { carregarMedicoes } from "@/servicos/medicoes";
 import { VistaGerencial, VistaMedicoes } from "./vistas-medicao";
+import { VistaRelatorio } from "./vista-relatorio";
 import { BotaoEnviar, Caixa, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
 import { CurvaAvanco, EvolucaoEtapas, RoscaProgresso } from "@/componentes/graficos-fisico";
 import { GradeFisico } from "@/componentes/grade-fisico";
@@ -27,6 +28,7 @@ export const VISTAS = [
   { id: "previsto", rotulo: "Previsto físico" },
   { id: "medicoes", rotulo: "Medições" },
   { id: "gerencial", rotulo: "Gerencial" },
+  { id: "relatorio", rotulo: "Relatório semanal" },
   { id: "planilha", rotulo: "Planilha da obra" },
 ] as const;
 type Vista = (typeof VISTAS)[number]["id"];
@@ -42,6 +44,7 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
   const podeEstruturar = temPermissao(u, "planejamento", "criar");
   const verValores = temPermissao(u, "orcamentos", "ver");
   const base = `/obras/${obraId}?aba=fisico`;
+  const visivel = (id: Vista) => (id === "medicoes" ? temPermissao(u, "medicoes") : id === "gerencial" ? temPermissao(u, "medicoes") && verValores : id === "relatorio" ? temPermissao(u, "relatorios") : true);
   const semanas = Array.from({ length: f.nSemanas }, (_, i) => ({ numero: i + 1, ...datasDaSemana(f.obra.dataInicio, i + 1) }));
   const semanaRef = Math.min(Math.max(f.semanaAtual, 1), f.nSemanas);
   const grade = f.servicos.map((s) => ({ id: s.id, etapaId: s.etapaId, descricao: s.descricao, duracao: s.duracaoDias, valorCliente: s.valorCliente, fornecedorNome: s.fornecedorNome, previsto: s.previsto, realizado: s.realizado }));
@@ -50,7 +53,7 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
   return (
     <div className="space-y-5">
       <nav className="flex flex-wrap gap-1 rounded-xl border border-borda bg-white p-1 text-sm" aria-label="Gestão da obra">
-        {VISTAS.filter((v) => (v.id !== "medicoes" && v.id !== "gerencial") || (temPermissao(u, "medicoes") && (v.id === "medicoes" || verValores))).map((v) => (
+        {VISTAS.filter((v) => visivel(v.id)).map((v) => (
           <Link key={v.id} href={`${base}&vista=${v.id}`} aria-current={vista === v.id ? "page" : undefined}
             className={clsx("rounded-lg px-3 py-1.5 font-medium", vista === v.id ? "bg-marca text-white" : "text-suave hover:bg-zinc-100 hover:text-texto", vazio && v.id !== "planilha" && "pointer-events-none opacity-40")}>
             {v.rotulo}
@@ -78,6 +81,8 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
       {vista === "gerencial" && (temPermissao(u, "medicoes") && verValores ? (
         <VistaGerencial m={await carregarMedicoes(db, u.empresaId, obraId)} obraId={obraId} podePagamentos={temPermissao(u, "medicoes", "editar")} />
       ) : <Aviso tom="alerta">Seu perfil não tem acesso ao Gerencial (valores da obra).</Aviso>)}
+
+      {vista === "relatorio" && <VistaRelatorio obraId={obraId} u={u} sp={sp} base={base} inicioObra={f.obra.dataInicio} semanaAtual={f.semanaAtual} nSemanas={f.nSemanas} />}
 
       {vista === "avanco" && <VistaAvanco f={f} semanas={semanas} semanaRef={semanaRef} verValores={verValores} />}
 

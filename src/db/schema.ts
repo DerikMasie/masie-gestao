@@ -661,3 +661,43 @@ export const pagamentoFornecedorObra = pgTable("pagamento_fornecedor_obra", {
   atualizadoPor: uuid().references(() => usuario.id),
   atualizadoEm: atualizadoEm(),
 }, (t) => [primaryKey({ columns: [t.obraId, t.fornecedorId, t.semana] })]);
+
+// ───────────────────────────── Relatório semanal (Item 1, passo 1.4) ─────────────────────────────
+
+export const statusRelatorio = pgEnum("status_relatorio", ["RASCUNHO", "EMITIDO"]);
+
+/**
+ * Relatório semanal ao cliente: um por semana da obra. Ao emitir, os dados calculados (avanço, medições, contrato,
+ * dados de depósito) são congelados em `dados`, para que o PDF emitido não mude depois. Reabrir gera nova versão.
+ */
+export const relatorioSemanal = pgTable("relatorio_semanal", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  semana: integer().notNull(),
+  status: statusRelatorio().notNull().default("RASCUNHO"),
+  versao: integer().notNull().default(0),
+  tarefasRealizadas: text().notNull().default(""),
+  tarefasProximaSemana: text().notNull().default(""),
+  anomalias: text().notNull().default(""),
+  acompanhamentoPrazo: text().notNull().default(""),
+  /** Dados congelados na emissão (JSON do relatório). */
+  dados: jsonb(),
+  emitidoEm: timestamp({ withTimezone: true }),
+  emitidoPor: uuid().references(() => usuario.id),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [uniqueIndex("relatorio_semana_uq").on(t.obraId, t.semana)]);
+
+/** Fotos do relatório: o arquivo é um anexo (entidade "relatorio_semanal"); aqui ficam ordem, legenda e ponto de foco. */
+export const relatorioFoto = pgTable("relatorio_foto", {
+  id: id(),
+  relatorioId: uuid().notNull().references(() => relatorioSemanal.id, { onDelete: "cascade" }),
+  anexoId: uuid().notNull().references(() => anexo.id),
+  ordem: integer().notNull(),
+  legenda: text(),
+  /** Ponto de foco do recorte 4:3, em % (50/50 = centro). */
+  focoX: integer().notNull().default(50),
+  focoY: integer().notNull().default(50),
+  criadoEm: criadoEm(),
+}, (t) => [index("relatorio_foto_idx").on(t.relatorioId, t.ordem)]);
