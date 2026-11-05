@@ -101,7 +101,7 @@ export async function importarFisicoAcao(obraId: string, _: EstadoForm, fd: Form
     const q = new URLSearchParams({
       importada: String(rel.servicos), semanas: String(rel.semanas), previsto: rel.previsto ? "1" : "0",
       ...(rel.etapasCriadas.length ? { criadas: rel.etapasCriadas.join(", ").slice(0, 300) } : {}),
-      ...(rel.fornecedoresNaoEncontrados.length ? { semFornecedor: rel.fornecedoresNaoEncontrados.join(", ").slice(0, 400) } : {}),
+      ...(rel.fornecedoresCriados.length ? { fornCriados: rel.fornecedoresCriados.join(", ").slice(0, 400) } : {}),
     });
     destino = `/obras/${obraId}?aba=fisico&vista=planilha&${q}`;
   });

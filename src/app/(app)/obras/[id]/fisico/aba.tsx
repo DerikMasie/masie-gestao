@@ -7,6 +7,8 @@ import { temPermissao } from "@/lib/auth/atual";
 import type { UsuarioSessao } from "@/servicos/sessoes";
 import { listarFornecedores } from "@/servicos/cadastros";
 import { carregarFisico } from "@/servicos/fisico";
+import { carregarMedicoes } from "@/servicos/medicoes";
+import { VistaGerencial, VistaMedicoes } from "./vistas-medicao";
 import { BotaoEnviar, Caixa, Campo, CampoSelecao, Formulario } from "@/componentes/formulario";
 import { CurvaAvanco, EvolucaoEtapas, RoscaProgresso } from "@/componentes/graficos-fisico";
 import { GradeFisico } from "@/componentes/grade-fisico";
@@ -23,6 +25,8 @@ export const VISTAS = [
   { id: "semana", rotulo: "Lançar semana" },
   { id: "realizado", rotulo: "Realizado físico" },
   { id: "previsto", rotulo: "Previsto físico" },
+  { id: "medicoes", rotulo: "Medições" },
+  { id: "gerencial", rotulo: "Gerencial" },
   { id: "planilha", rotulo: "Planilha da obra" },
 ] as const;
 type Vista = (typeof VISTAS)[number]["id"];
@@ -46,7 +50,7 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
   return (
     <div className="space-y-5">
       <nav className="flex flex-wrap gap-1 rounded-xl border border-borda bg-white p-1 text-sm" aria-label="Gestão da obra">
-        {VISTAS.map((v) => (
+        {VISTAS.filter((v) => (v.id !== "medicoes" && v.id !== "gerencial") || (temPermissao(u, "medicoes") && (v.id === "medicoes" || verValores))).map((v) => (
           <Link key={v.id} href={`${base}&vista=${v.id}`} aria-current={vista === v.id ? "page" : undefined}
             className={clsx("rounded-lg px-3 py-1.5 font-medium", vista === v.id ? "bg-marca text-white" : "text-suave hover:bg-zinc-100 hover:text-texto", vazio && v.id !== "planilha" && "pointer-events-none opacity-40")}>
             {v.rotulo}
@@ -61,10 +65,19 @@ export async function AbaFisico({ obraId, u, sp }: { obraId: string; u: UsuarioS
         <Aviso tom="sucesso">
           Planilha importada: {sp.importada} serviços e {sp.semanas} semanas{sp.previsto === "1" ? ", com o previsto físico" : " (sem previsto)"}.
           {sp.criadas && <> Categorias criadas: {sp.criadas}.</>}
-          {sp.semFornecedor && <> Fornecedores não encontrados no cadastro (anotados na observação do serviço): {sp.semFornecedor}.</>}
+          {sp.fornCriados && <> Fornecedores cadastrados automaticamente (complete os dados em Cadastros → Fornecedores): {sp.fornCriados}.</>}
         </Aviso>
       )}
       {sp.gerada && <Aviso tom="sucesso">Planilha da obra gerada do orçamento-base: {sp.gerada} serviços. Ajuste fornecedor, MO acertada e duração de cada serviço.</Aviso>}
+
+      {vista === "medicoes" && (temPermissao(u, "medicoes") ? (
+        <VistaMedicoes m={await carregarMedicoes(db, u.empresaId, obraId)} obraId={obraId} base={base} todas={sp.todas === "1"}
+          pode={{ fechar: temPermissao(u, "medicoes", "criar"), situacao: temPermissao(u, "medicoes", "editar"), reabrir: temPermissao(u, "medicoes", "aprovar"), ajustes: temPermissao(u, "medicoes", "criar") }} />
+      ) : <Aviso tom="alerta">Seu perfil não tem acesso a Medições.</Aviso>)}
+
+      {vista === "gerencial" && (temPermissao(u, "medicoes") && verValores ? (
+        <VistaGerencial m={await carregarMedicoes(db, u.empresaId, obraId)} obraId={obraId} podePagamentos={temPermissao(u, "medicoes", "editar")} />
+      ) : <Aviso tom="alerta">Seu perfil não tem acesso ao Gerencial (valores da obra).</Aviso>)}
 
       {vista === "avanco" && <VistaAvanco f={f} semanas={semanas} semanaRef={semanaRef} verValores={verValores} />}
 

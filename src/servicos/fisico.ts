@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNull, max, sql } from "drizzle-orm";
 import type { BancoDados, Executor } from "@/db";
-import { fornecedor, obra, obraEtapa, obraSemana, obraServico, obraServicoSemana, orcamento } from "@/db/schema";
+import { fornecedor, medicao, obra, obraEtapa, obraSemana, obraServico, obraServicoSemana, orcamento } from "@/db/schema";
 import { chaveEtapa, exibirNoRelatorioPadrao } from "@/dominio/eap";
 import { calcularAvanco, semanaDaData, validarSerie, type Serie, type ServicoFisico } from "@/dominio/fisico";
 import { curvaABC } from "@/dominio/orcamento";
@@ -166,6 +166,8 @@ export async function salvarPeriodoMedicao(banco: BancoDados, ctx: Contexto, obr
   if (!Number.isInteger(semanas) || semanas < 1 || semanas > 4) throw new ErroNegocio("O período de medição deve ser de 1 a 4 semanas", "semanasPorMedicao");
   return banco.transaction(async (tx) => {
     const antes = await exigirObra(tx, ctx.empresaId, obraId);
+    const [fechada] = await tx.select({ n: medicao.numero }).from(medicao).where(eq(medicao.obraId, obraId)).limit(1);
+    if (fechada && antes.semanasPorMedicao !== semanas) throw new ErroNegocio("Já existem medições fechadas nesta obra: o período de medição não pode mais ser alterado (as medições ficariam desalinhadas). Reabra as medições para mudar.", "semanasPorMedicao");
     const [depois] = await tx.update(obra).set({ semanasPorMedicao: semanas }).where(eq(obra.id, obraId)).returning();
     await auditarEdicao(tx, { empresaId: ctx.empresaId, usuarioId: ctx.usuarioId, entidade: "obra", entidadeId: obraId, obraId, descricao: "Período de medição", ip: ctx.ip }, antes, depois!);
   });
@@ -295,6 +297,7 @@ export interface RelatorioImportacaoFisico {
   primeiraSemana: number;
   previsto: boolean;
   fornecedoresNaoEncontrados: string[];
+  fornecedoresCriados: string[];
   avisos: string[];
   totalCliente: number;
 }
@@ -321,6 +324,14 @@ export async function importarFisico(banco: BancoDados, ctx: Contexto, obraId: s
     const criadas: string[] = [];
     const fornecedores = await tx.select({ id: fornecedor.id, nome: fornecedor.nome }).from(fornecedor).where(and(eq(fornecedor.empresaId, ctx.empresaId), isNull(fornecedor.excluidoEm)));
     const fornPorNome = new Map(fornecedores.map((f) => [f.nome.trim().toLowerCase(), f.id]));
+    // Fornecedores da planilha que não estão no cadastro são criados (só com o nome), como na aba Fornecedores do modelo.
+    const criadosForn: string[] = [];
+    for (const nome of new Set(servicosLidos.map((s) => s.fornecedor?.trim()).filter((x): x is string => !!x))) {
+      if (fornPorNome.has(nome.toLowerCase())) continue;
+      const [f] = await tx.insert(fornecedor).values({ empresaId: ctx.empresaId, nome, observacoes: `Cadastrado automaticamente na importação da planilha da obra ${o.codigo}. Complete os dados.` }).returning({ id: fornecedor.id });
+      fornPorNome.set(nome.toLowerCase(), f!.id);
+      criadosForn.push(nome);
+    }
     const naoEncontrados = new Set<string>();
     let total = 0, nSemanas = 0;
 
@@ -358,8 +369,8 @@ export async function importarFisico(banco: BancoDados, ctx: Contexto, obraId: s
     const n = servicosLidos.length;
     await registrarAuditoria(tx, {
       empresaId: ctx.empresaId, usuarioId: ctx.usuarioId, acao: "CRIAR", entidade: "obra_servico", obraId,
-      descricao: `Planilha da obra importada de ${nomeArquivo}: ${n} serviços, ${lido.datas.length} semanas${lido.temPrevisto ? " (com previsto)" : ""}${opcoes.substituir ? " — substituiu a planilha anterior" : ""}`, ip: ctx.ip,
+      descricao: `Planilha da obra importada de ${nomeArquivo}: ${n} serviços, ${lido.datas.length} semanas${lido.temPrevisto ? " (com previsto)" : ""}${criadosForn.length ? `; fornecedores cadastrados: ${criadosForn.join(", ")}` : ""}${opcoes.substituir ? " — substituiu a planilha anterior" : ""}`, ip: ctx.ip,
     });
-    return { servicos: n, etapasCriadas: criadas, semanas: nSemanas, primeiraSemana: primeira, previsto: lido.temPrevisto, fornecedoresNaoEncontrados: [...naoEncontrados], avisos: lido.avisos, totalCliente: total };
+    return { servicos: n, etapasCriadas: criadas, semanas: nSemanas, primeiraSemana: primeira, previsto: lido.temPrevisto, fornecedoresNaoEncontrados: [...naoEncontrados], fornecedoresCriados: criadosForn, avisos: lido.avisos, totalCliente: total };
   });
 }

@@ -50,6 +50,13 @@
       "when": 1793905788082,
       "tag": "0006_arquivo_conteudo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793906584362,
+      "tag": "0007_medicoes",
+      "breakpoints": true
     }
   ]
 }

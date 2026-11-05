@@ -606,3 +606,58 @@ export const obraServicoSemana = pgTable("obra_servico_semana", {
   atualizadoPor: uuid().references(() => usuario.id),
   atualizadoEm: atualizadoEm(),
 }, (t) => [primaryKey({ columns: [t.servicoId, t.semana] })]);
+
+// ───────────────────────────── Medições, contrato e fornecedores da obra (Item 1, passo 1.3) ─────────────────────────────
+
+export const situacaoMedicao = pgEnum("situacao_medicao", ["PAGA", "NAO_PAGA"]);
+
+/**
+ * Medição FECHADA (emitida): valores congelados no fechamento. As medições abertas são calculadas a partir do realizado
+ * e não ficam gravadas. Diferenças posteriores no realizado de semanas fechadas entram na primeira medição aberta.
+ */
+export const medicao = pgTable("medicao", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  numero: integer().notNull(),
+  semanaInicio: integer().notNull(),
+  semanaFim: integer().notNull(),
+  /** Data de referência (sexta-feira da última semana). */
+  data: date({ mode: "string" }).notNull(),
+  valorContrato: doublePrecision().notNull(),
+  valorAditivos: doublePrecision().notNull(),
+  /** Descontos/reembolsos da medição + ajuste de medições anteriores. */
+  valorAjustes: doublePrecision().notNull(),
+  entradaAbatida: doublePrecision().notNull(),
+  valorCobranca: doublePrecision().notNull(),
+  situacao: situacaoMedicao().notNull().default("NAO_PAGA"),
+  pagaEm: date({ mode: "string" }),
+  observacao: text(),
+  fechadaPor: uuid().references(() => usuario.id),
+  fechadaEm: criadoEm(),
+}, (t) => [uniqueIndex("medicao_numero_uq").on(t.obraId, t.numero)]);
+
+export const tipoAjusteContrato = pgEnum("tipo_ajuste_contrato", ["ADITIVO", "DESCONTO", "REEMBOLSO"]);
+
+/** Aditivos, descontos e reembolsos do contrato (tabela do Relatório Situação). Valor sempre positivo; o tipo dá o sinal. */
+export const ajusteContrato = pgTable("ajuste_contrato", {
+  id: id(),
+  obraId: uuid().notNull().references(() => obra.id),
+  tipo: tipoAjusteContrato().notNull(),
+  data: date({ mode: "string" }).notNull(),
+  valor: doublePrecision().notNull(),
+  descricao: text().notNull(),
+  /** Descontos e reembolsos entram na cobrança desta medição. */
+  medicaoNumero: integer(),
+  criadoPor: uuid().references(() => usuario.id),
+  criadoEm: criadoEm(),
+}, (t) => [index("ajuste_contrato_obra_idx").on(t.obraId)]);
+
+/** Pagamentos a fornecedores informados à mão na obra (bloco "Pagamentos" do Gerencial), por semana. */
+export const pagamentoFornecedorObra = pgTable("pagamento_fornecedor_obra", {
+  obraId: uuid().notNull().references(() => obra.id),
+  fornecedorId: uuid().notNull().references(() => fornecedor.id),
+  semana: integer().notNull(),
+  valor: doublePrecision().notNull(),
+  atualizadoPor: uuid().references(() => usuario.id),
+  atualizadoEm: atualizadoEm(),
+}, (t) => [primaryKey({ columns: [t.obraId, t.fornecedorId, t.semana] })]);
