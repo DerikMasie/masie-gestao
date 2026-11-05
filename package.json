@@ -12,7 +12,8 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "vercel-build": "tsx scripts/migrate.ts && tsx scripts/seed.ts && next build"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.0.2",

@@ -2,7 +2,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import type { BancoDados, Executor } from "@/db";
-import { anexo, usuario } from "@/db/schema";
+import { db } from "@/db";
+import { anexo, arquivoConteudo, usuario } from "@/db/schema";
 import { sha256, tokenAleatorio } from "@/lib/cripto";
 import { registrarAuditoria } from "./auditoria";
 import { type Contexto, ErroNegocio } from "./contexto";
@@ -39,14 +40,31 @@ function pastaBase() {
   return path.resolve(/* turbopackIgnore: true */ process.env.ARMAZENAMENTO_DIR ?? "./storage");
 }
 
-/** Driver local de armazenamento. Em produção, substituir por armazenamento de objetos privado (S3/Supabase Storage). */
-async function gravar(chave: string, dados: Buffer) {
+/**
+ * Armazenamento do conteúdo: "banco" (tabela arquivo_conteudo — padrão na Vercel, que não tem disco persistente)
+ * ou "local" (pasta ARMAZENAMENTO_DIR). Escolha por ARMAZENAMENTO=banco|local. Anexos antigos continuam legíveis
+ * pelo driver em que foram gravados (o prefixo "db:" da chave indica o banco).
+ */
+const usarBanco = () => (process.env.ARMAZENAMENTO ?? (process.env.VERCEL ? "banco" : "local")) === "banco";
+
+async function gravar(banco: Executor, chave: string, dados: Buffer): Promise<string> {
+  if (usarBanco()) {
+    const k = `db:${chave}`;
+    await banco.insert(arquivoConteudo).values({ chave: k, dados });
+    return k;
+  }
   const destino = path.join(/* turbopackIgnore: true */ pastaBase(), chave);
   await mkdir(path.dirname(destino), { recursive: true });
   await writeFile(destino, dados, { flag: "wx" });
+  return chave;
 }
 
-export async function lerConteudo(chave: string): Promise<Buffer> {
+export async function lerConteudo(chave: string, banco: Executor = db): Promise<Buffer> {
+  if (chave.startsWith("db:")) {
+    const [r] = await banco.select({ dados: arquivoConteudo.dados }).from(arquivoConteudo).where(eq(arquivoConteudo.chave, chave));
+    if (!r) throw new Error("Conteúdo do anexo não encontrado");
+    return Buffer.from(r.dados);
+  }
   const base = pastaBase();
   const destino = path.resolve(/* turbopackIgnore: true */ base, chave);
   if (!destino.startsWith(base + path.sep)) throw new Error("Caminho inválido");
@@ -61,12 +79,12 @@ export async function anexarArquivo(
   const mime = validarArquivo(arquivo.nome, arquivo.tipo, arquivo.dados);
   const nomeSeguro = path.basename(arquivo.nome).replace(/[^\p{L}\p{N}._ -]/gu, "_").slice(0, 150);
   const chave = `${ctx.empresaId}/${alvo.entidade}/${alvo.entidadeId}/${tokenAleatorio(12)}${path.extname(nomeSeguro).toLowerCase()}`;
-  await gravar(chave, arquivo.dados);
+  const caminho = await gravar(banco, chave, arquivo.dados);
   return banco.transaction(async (tx) => {
     const [a] = await tx.insert(anexo).values({
       empresaId: ctx.empresaId, entidade: alvo.entidade, entidadeId: alvo.entidadeId, obraId: alvo.obraId ?? null,
       nomeArquivo: nomeSeguro, tipoMime: mime, tamanho: arquivo.dados.length, sha256: sha256(arquivo.dados),
-      caminho: chave, descricao: arquivo.descricao ?? null, criadoPor: ctx.usuarioId,
+      caminho, descricao: arquivo.descricao ?? null, criadoPor: ctx.usuarioId,
     }).returning();
     await registrarAuditoria(tx, {
       empresaId: ctx.empresaId, usuarioId: ctx.usuarioId, acao: "ANEXAR", entidade: alvo.entidade, entidadeId: alvo.entidadeId,

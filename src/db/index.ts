@@ -3,7 +3,9 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 function criar(url: string) {
-  const cliente = postgres(url, { max: 10, prepare: true });
+  // Pool do Neon/PgBouncer ("-pooler") não aceita prepared statements; em servidor sem estado (Vercel) poucas conexões por instância.
+  const pool = /-pooler\.|pgbouncer=true/.test(url);
+  const cliente = postgres(url, { max: process.env.VERCEL ? 3 : 10, prepare: !pool, ...(process.env.VERCEL ? { idle_timeout: 20 } : {}) });
   return drizzle(cliente, { schema, casing: "snake_case" });
 }
 

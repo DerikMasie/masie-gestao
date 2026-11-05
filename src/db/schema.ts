@@ -5,7 +5,7 @@
  */
 import { sql } from "drizzle-orm";
 import {
-  bigserial, boolean, date, doublePrecision, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey,
+  bigserial, boolean, customType, date, doublePrecision, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey,
   text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import type { MatrizPermissoes } from "@/dominio/permissoes";
@@ -308,6 +308,18 @@ export const orcamentoItem = pgTable("orcamento_item", {
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
 }, (t) => [index("orcamento_item_orc_idx").on(t.orcamentoId, t.etapaId, t.ordem)]);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/**
+ * Conteúdo dos anexos guardado no próprio banco (driver "banco"): privado, com o backup do banco e sem serviço extra.
+ * Usado em hospedagens sem disco persistente (ex.: Vercel). A chave do anexo começa com "db:".
+ */
+export const arquivoConteudo = pgTable("arquivo_conteudo", {
+  chave: text().primaryKey(),
+  dados: bytea().notNull(),
+  criadoEm: criadoEm(),
+});
 
 export const anexo = pgTable("anexo", {
   id: id(),

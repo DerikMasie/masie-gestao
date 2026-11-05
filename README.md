@@ -43,19 +43,15 @@ node tests/e2e/financeiro.cjs    # Financeiro e notas fiscais (FINANCEIRO=arquiv
 PLANILHA=ControlePalco.xlsm node tests/e2e/gestao-obra.cjs   # Gestão da obra (físico) na obra 2026-0001
 ```
 
-## Produção
+## Produção / versão de testes (Vercel + Neon)
 
-```bash
-npm run build
-npm run db:migrate
-npm start
-```
+Passo a passo em [`docs/08-publicacao-vercel.md`](docs/08-publicacao-vercel.md). Resumo:
 
-Recomendado: Vercel (app) + Supabase ou Neon (PostgreSQL gerenciado com backup). Antes de publicar:
-
-1. Troque o driver local de anexos (`ARMAZENAMENTO_DIR`) por armazenamento de objetos privado. Em servidores sem disco persistente (Vercel), os anexos locais se perdem.
-2. Gere uma `DADOS_SENSIVEIS_CHAVE` exclusiva de produção.
-3. Sirva apenas por HTTPS. O cookie de sessão é `Secure` em produção.
+- A Vercel roda `npm run vercel-build`, que aplica as migrações, faz a carga inicial (se `SEED_ADMIN_SENHA` estiver definida) e compila.
+- Banco: Neon (integração da Vercel). Migrações usam `DATABASE_URL_UNPOOLED`; o app usa a conexão com pool.
+- Anexos e fotos ficam no próprio banco (`ARMAZENAMENTO=banco`, padrão na Vercel).
+- Variáveis obrigatórias: `DADOS_SENSIVEIS_CHAVE` (exclusiva do ambiente, guarde-a) e `SEED_ADMIN_SENHA` (senha inicial do administrador).
+- Sirva apenas por HTTPS (a Vercel já faz). O cookie de sessão é `Secure` em produção.
 
 ## Estrutura
 
