@@ -122,12 +122,63 @@ Mostrados como **mediana e faixa** (do 1º ao 3º quartil), com o **número de a
 
 **Número Masie:** custo por m² (mediana e faixa) das obras concluídas, por tipo de reforma e padrão, atualizado por índice (INCC) até a data da consulta para comparar obras de anos diferentes.
 
-## Uso dos indicadores (fase posterior)
+## Como os resultados voltam para o sistema
 
-Ao cadastrar a planilha de uma obra nova, com quantidade e equipe prevista, o sistema sugere:
+Os indicadores são **internos**: não aparecem no relatório semanal nem em nada que vá ao cliente. Quem vê custo é definido por permissão nova ("Indicadores"), por padrão só os sócios.
 
-- a **duração** de cada serviço: `quantidade ÷ (produtividade × pessoas)`, que hoje é digitada à mão;
-- a **quantidade de material**: `quantidade × consumo × (1 + perda)`.
+### 1. Menu novo "Indicadores" (visão da empresa)
+
+**Tabela Masie de serviços**: uma linha por serviço padrão.
+
+| Serviço | Produtividade | Consumo | MO/m² | Material/m² | Total/m² | Amostras |
+|---|---|---|---|---|---|---|
+| Massa corrida, aplicação | 30 m²/pessoa-dia (26 a 35) | 0,9 kg/m² | R$ 9,50 | R$ 4,10 | R$ 13,60 | 8 obras: indicativo |
+
+- Filtros: período, superfície, condição da base e dificuldade.
+- Ao clicar na linha, abre o detalhe:
+  - gráfico com um ponto por obra ao longo do tempo, para ver se a equipe está melhorando ou piorando;
+  - comparação entre empreiteiros no mesmo serviço;
+  - lista das obras que compõem o número, com link até o apontamento de origem. Todo número é rastreável.
+
+**Número Masie**: um cartão por tipo de reforma × padrão.
+- Custo por m², com mediana, faixa e quantidade de obras.
+- Barra com a composição: MO, material, indiretos e outros.
+- Valor corrigido pelo INCC até hoje.
+
+### 2. Aba "Produtividade" dentro da obra
+
+Para cada serviço com quantidade, durante a execução:
+- executado / total (ex.: 180 de 320 m²);
+- produtividade real × referência Masie;
+- custo por m² até agora;
+- **previsão de término pelo ritmo real** (ex.: "no ritmo atual, a pintura termina em 9 dias úteis; no cronograma, 6").
+
+Material da obra:
+- comprado, destinado, sobra e consumo por m² × referência;
+- **quanto ainda falta comprar** para terminar o serviço pela referência de consumo.
+
+### 3. Alertas nas pendências do painel de obras
+
+Entram na lista de pendências que já existe na tela inicial:
+
+| Pendência | Gravidade |
+|---|---|
+| Apontamento de quantidade e equipe da semana anterior não lançado | alta |
+| Produtividade do serviço mais de 25% abaixo da referência (a partir de 5 amostras) | média |
+| Consumo de material mais de 20% acima da referência (possível desperdício) | média |
+| Material comprado já supera o previsto para o serviço | média |
+| Serviço concluído sem sobra informada | informativa |
+| NF com itens sem insumo ligado | informativa |
+
+### 4. Retroalimentação na planilha de obra nova (fase 4)
+
+Ao cadastrar a planilha de uma obra nova, informar a quantidade e a equipe prevista faz o sistema sugerir:
+
+- a **duração** de cada serviço, `quantidade ÷ (produtividade × pessoas)`, que hoje é digitada à mão. A sugestão mostra a base (ex.: "baseado em 12 obras");
+- a **lista de compras**: `quantidade × consumo × (1 + perda)`, agrupada por insumo;
+- a **estimativa de custo** da obra pelo número Masie (área × R$/m² do tipo e padrão), para conferir o orçamento.
+
+A sugestão nunca é gravada sozinha: o usuário aceita ou ajusta.
 
 ## Novas tabelas (resumo)
 
